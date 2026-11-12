@@ -9,12 +9,12 @@ import (
 )
 
 // Create the superuser group with system and team admin permissions, if no
-// instance-level group exists yet. Team role groups do not count: they exist
-// from the first start and grant nothing on the system.
+// instance-level group exists yet. Team and project role groups do not count:
+// they grant nothing on the system.
 func (self *BootstrapRepository) EnsureSuperuserGroup(ctx context.Context, tx repository.TxInterface) error {
 	db := tx.Client()
 
-	groupCount, err := db.Group.Query().Where(group.TeamIDIsNil()).Count(ctx)
+	groupCount, err := db.Group.Query().Where(group.TeamIDIsNil(), group.ProjectIDIsNil()).Count(ctx)
 	if err != nil {
 		return err
 	}

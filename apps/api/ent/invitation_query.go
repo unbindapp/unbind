@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
@@ -26,6 +27,7 @@ type InvitationQuery struct {
 	inters      []Interceptor
 	predicates  []predicate.Invitation
 	withTeam    *TeamQuery
+	withProject *ProjectQuery
 	withInviter *UserQuery
 	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -79,6 +81,28 @@ func (_q *InvitationQuery) QueryTeam() *TeamQuery {
 			sqlgraph.From(invitation.Table, invitation.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, invitation.TeamTable, invitation.TeamColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProject chains the current query on the "project" edge.
+func (_q *InvitationQuery) QueryProject() *ProjectQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invitation.Table, invitation.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, invitation.ProjectTable, invitation.ProjectColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -301,6 +325,7 @@ func (_q *InvitationQuery) Clone() *InvitationQuery {
 		inters:      append([]Interceptor{}, _q.inters...),
 		predicates:  append([]predicate.Invitation{}, _q.predicates...),
 		withTeam:    _q.withTeam.Clone(),
+		withProject: _q.withProject.Clone(),
 		withInviter: _q.withInviter.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -317,6 +342,17 @@ func (_q *InvitationQuery) WithTeam(opts ...func(*TeamQuery)) *InvitationQuery {
 		opt(query)
 	}
 	_q.withTeam = query
+	return _q
+}
+
+// WithProject tells the query-builder to eager-load the nodes that are connected to
+// the "project" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *InvitationQuery) WithProject(opts ...func(*ProjectQuery)) *InvitationQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProject = query
 	return _q
 }
 
@@ -409,8 +445,9 @@ func (_q *InvitationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*I
 	var (
 		nodes       = []*Invitation{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			_q.withTeam != nil,
+			_q.withProject != nil,
 			_q.withInviter != nil,
 		}
 	)
@@ -438,6 +475,12 @@ func (_q *InvitationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*I
 	if query := _q.withTeam; query != nil {
 		if err := _q.loadTeam(ctx, query, nodes, nil,
 			func(n *Invitation, e *Team) { n.Edges.Team = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProject; query != nil {
+		if err := _q.loadProject(ctx, query, nodes, nil,
+			func(n *Invitation, e *Project) { n.Edges.Project = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -472,6 +515,38 @@ func (_q *InvitationQuery) loadTeam(ctx context.Context, query *TeamQuery, nodes
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "team_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *InvitationQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*Invitation, init func(*Invitation), assign func(*Invitation, *Project)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Invitation)
+	for i := range nodes {
+		if nodes[i].ProjectID == nil {
+			continue
+		}
+		fk := *nodes[i].ProjectID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(project.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "project_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -542,6 +617,9 @@ func (_q *InvitationQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTeam != nil {
 			_spec.Node.AddColumnOnce(invitation.FieldTeamID)
+		}
+		if _q.withProject != nil {
+			_spec.Node.AddColumnOnce(invitation.FieldProjectID)
 		}
 		if _q.withInviter != nil {
 			_spec.Node.AddColumnOnce(invitation.FieldInvitedBy)

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 )
@@ -33,7 +34,9 @@ type Group struct {
 	K8sRoleName *string `json:"k8s_role_name,omitempty"`
 	// Set on a role group owned by a team
 	TeamID *uuid.UUID `json:"team_id,omitempty"`
-	// The one role a team role group grants on its team
+	// Set on a role group owned by a project
+	ProjectID *uuid.UUID `json:"project_id,omitempty"`
+	// The one role a role group grants on its team or project
 	Role *schema.PermittedAction `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
@@ -49,9 +52,11 @@ type GroupEdges struct {
 	Permissions []*Permission `json:"permissions,omitempty"`
 	// Team holds the value of the team edge.
 	Team *Team `json:"team,omitempty"`
+	// Project holds the value of the project edge.
+	Project *Project `json:"project,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -83,12 +88,23 @@ func (e GroupEdges) TeamOrErr() (*Team, error) {
 	return nil, &NotLoadedError{edge: "team"}
 }
 
+// ProjectOrErr returns the Project value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GroupEdges) ProjectOrErr() (*Project, error) {
+	if e.Project != nil {
+		return e.Project, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: project.Label}
+	}
+	return nil, &NotLoadedError{edge: "project"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Group) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case group.FieldTeamID:
+		case group.FieldTeamID, group.FieldProjectID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case group.FieldName, group.FieldDescription, group.FieldK8sRoleName, group.FieldRole:
 			values[i] = new(sql.NullString)
@@ -155,6 +171,13 @@ func (_m *Group) assignValues(columns []string, values []any) error {
 				_m.TeamID = new(uuid.UUID)
 				*_m.TeamID = *value.S.(*uuid.UUID)
 			}
+		case group.FieldProjectID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field project_id", values[i])
+			} else if value.Valid {
+				_m.ProjectID = new(uuid.UUID)
+				*_m.ProjectID = *value.S.(*uuid.UUID)
+			}
 		case group.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
@@ -188,6 +211,11 @@ func (_m *Group) QueryPermissions() *PermissionQuery {
 // QueryTeam queries the "team" edge of the Group entity.
 func (_m *Group) QueryTeam() *TeamQuery {
 	return NewGroupClient(_m.config).QueryTeam(_m)
+}
+
+// QueryProject queries the "project" edge of the Group entity.
+func (_m *Group) QueryProject() *ProjectQuery {
+	return NewGroupClient(_m.config).QueryProject(_m)
 }
 
 // Update returns a builder for updating this Group.
@@ -232,6 +260,11 @@ func (_m *Group) String() string {
 	builder.WriteString(", ")
 	if v := _m.TeamID; v != nil {
 		builder.WriteString("team_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.ProjectID; v != nil {
+		builder.WriteString("project_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")

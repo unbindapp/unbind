@@ -60,9 +60,13 @@ type ProjectEdges struct {
 	DefaultEnvironment *Environment `json:"default_environment,omitempty"`
 	// ProjectWebhooks holds the value of the project_webhooks edge.
 	ProjectWebhooks []*Webhook `json:"project_webhooks,omitempty"`
+	// RoleGroups holds the value of the role_groups edge.
+	RoleGroups []*Group `json:"role_groups,omitempty"`
+	// Invitations holds the value of the invitations edge.
+	Invitations []*Invitation `json:"invitations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // TeamOrErr returns the Team value or an error if the edge
@@ -103,6 +107,24 @@ func (e ProjectEdges) ProjectWebhooksOrErr() ([]*Webhook, error) {
 		return e.ProjectWebhooks, nil
 	}
 	return nil, &NotLoadedError{edge: "project_webhooks"}
+}
+
+// RoleGroupsOrErr returns the RoleGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) RoleGroupsOrErr() ([]*Group, error) {
+	if e.loadedTypes[4] {
+		return e.RoleGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "role_groups"}
+}
+
+// InvitationsOrErr returns the Invitations value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) InvitationsOrErr() ([]*Invitation, error) {
+	if e.loadedTypes[5] {
+		return e.Invitations, nil
+	}
+	return nil, &NotLoadedError{edge: "invitations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -244,6 +266,16 @@ func (_m *Project) QueryDefaultEnvironment() *EnvironmentQuery {
 // QueryProjectWebhooks queries the "project_webhooks" edge of the Project entity.
 func (_m *Project) QueryProjectWebhooks() *WebhookQuery {
 	return NewProjectClient(_m.config).QueryProjectWebhooks(_m)
+}
+
+// QueryRoleGroups queries the "role_groups" edge of the Project entity.
+func (_m *Project) QueryRoleGroups() *GroupQuery {
+	return NewProjectClient(_m.config).QueryRoleGroups(_m)
+}
+
+// QueryInvitations queries the "invitations" edge of the Project entity.
+func (_m *Project) QueryInvitations() *InvitationQuery {
+	return NewProjectClient(_m.config).QueryInvitations(_m)
 }
 
 // Update returns a builder for updating this Project.

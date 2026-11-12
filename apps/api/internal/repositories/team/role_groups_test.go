@@ -93,6 +93,70 @@ func (suite *RoleGroupsSuite) TestDeleteRemovesRoleGroupsAndGrantsNamingTheTeam(
 	}
 }
 
+func (suite *RoleGroupsSuite) project(name string) *ent.Project {
+	return suite.DB.Project.Create().SetTeamID(suite.team.ID).SetKubernetesName(name).SetName(name).SetKubernetesSecret(name).SaveX(suite.Ctx)
+}
+
+func (suite *RoleGroupsSuite) TestEnsureProjectRoleGroupsIsIdempotentAndGrantsOnlyTheProject() {
+	web := suite.project("web-abc")
+	_, err := suite.teamRepo.EnsureRoleGroups(suite.Ctx, nil, suite.team)
+	suite.Require().NoError(err)
+
+	first, err := suite.teamRepo.EnsureProjectRoleGroups(suite.Ctx, nil, web)
+	suite.Require().NoError(err)
+	suite.DB.Group.UpdateOne(first[1]).AddUsers(suite.user).ExecX(suite.Ctx)
+	again, err := suite.teamRepo.EnsureProjectRoleGroups(suite.Ctx, nil, web)
+	suite.Require().NoError(err)
+
+	suite.Len(first, 3)
+	suite.Len(again, 3)
+	suite.Equal(3, suite.DB.Group.Query().Where(group.ProjectID(web.ID)).CountX(suite.Ctx))
+	suite.Require().Len(again[1].Edges.Users, 1, "members come back loaded")
+
+	for i, role := range MemberRoles {
+		suite.Equal(first[i].ID, again[i].ID)
+		suite.Equal(role, *first[i].Role)
+		suite.Nil(first[i].TeamID)
+		suite.Equal("project-web-abc-"+string(role), first[i].Name)
+		perms := suite.DB.Group.QueryPermissions(first[i]).AllX(suite.Ctx)
+		suite.Require().Len(perms, 1)
+		suite.Equal(role, perms[0].Action)
+		suite.Equal(schema.ResourceTypeProject, perms[0].ResourceType)
+		suite.Equal(schema.ResourceSelector{ID: web.ID}, perms[0].ResourceSelector)
+	}
+
+	teamGroups, err := suite.teamRepo.GetRoleGroups(suite.Ctx, suite.team.ID)
+	suite.Require().NoError(err)
+	suite.Len(teamGroups, 3, "project role groups are not the team's")
+
+	projectGroups, err := suite.teamRepo.GetProjectRoleGroups(suite.Ctx, web.ID)
+	suite.Require().NoError(err)
+	suite.Len(projectGroups, 3)
+}
+
+func (suite *RoleGroupsSuite) TestGetGroupsReachingProjectHoldsTeamAccessAndSkipsOwnAndSiblingProjects() {
+	web, api := suite.project("web-abc"), suite.project("api-abc")
+	teamGroups, err := suite.teamRepo.EnsureRoleGroups(suite.Ctx, nil, suite.team)
+	suite.Require().NoError(err)
+	_, err = suite.teamRepo.EnsureProjectRoleGroups(suite.Ctx, nil, web)
+	suite.Require().NoError(err)
+	_, err = suite.teamRepo.EnsureProjectRoleGroups(suite.Ctx, nil, api)
+	suite.Require().NoError(err)
+	superusers := suite.grantGroup("superuser", schema.ResourceSelector{Superuser: true}, schema.ActionAdmin)
+	suite.grantGroup("beta-admins", schema.ResourceSelector{ID: suite.other.ID}, schema.ActionAdmin)
+	webGrant := suite.DB.Permission.Create().SetAction(schema.ActionViewer).SetResourceType(schema.ResourceTypeProject).SetResourceSelector(schema.ResourceSelector{ID: web.ID}).SaveX(suite.Ctx)
+	webViewers := suite.DB.Group.Create().SetName("web-viewers").AddPermissions(webGrant).SaveX(suite.Ctx)
+
+	reaching, err := suite.teamRepo.GetGroupsReachingProject(suite.Ctx, suite.team.ID, web.ID)
+	suite.Require().NoError(err)
+
+	var names []string
+	for _, g := range reaching {
+		names = append(names, g.Name)
+	}
+	suite.ElementsMatch([]string{superusers.Name, webViewers.Name, teamGroups[0].Name, teamGroups[1].Name, teamGroups[2].Name}, names)
+}
+
 func TestRoleGroupsSuite(t *testing.T) {
 	suite.Run(t, new(RoleGroupsSuite))
 }

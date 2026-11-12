@@ -21,7 +21,7 @@ type TProps =
   | { member?: never; isPlaceholder: true };
 
 export default function MemberCard({ member, isPlaceholder }: TProps) {
-  const { teamId, canManage } = useTeamMembers();
+  const { teamId, projectId, scopeNoun, canManage } = useTeamMembers();
   const { invalidate } = useTeamMembersUtils();
 
   const { mutate: updateRole, isPending: isUpdatingRole } = useMutation({
@@ -37,7 +37,7 @@ export default function MemberCard({ member, isPlaceholder }: TProps) {
     reset: removeReset,
   } = useMutation({ mutationFn: removeTeamMemberFn, onSuccess: () => invalidate() });
 
-  const inherited = member?.source === "group";
+  const inherited = member !== undefined && member.source !== scopeNoun;
   const editable = canManage && member !== undefined && !inherited;
 
   return (
@@ -59,7 +59,7 @@ export default function MemberCard({ member, isPlaceholder }: TProps) {
           </p>
           {inherited && (
             <p className="text-muted-foreground min-w-0 truncate text-sm">
-              {roleTitle(member.role)} via {member.group_name}
+              {roleTitle(member.role)} via {member.group_name ?? `the ${member.source}`}
             </p>
           )}
         </div>
@@ -73,12 +73,12 @@ export default function MemberCard({ member, isPlaceholder }: TProps) {
               disabled={isUpdatingRole}
               onChange={(role) => {
                 if (role === member.role) return;
-                updateRole({ teamId, userId: member.id, role });
+                updateRole({ teamId, projectId, userId: member.id, role });
               }}
             />
             <DeleteEntityTrigger
               dialogTitle="Remove Member"
-              dialogDescription="They lose access to this team right away. Their account stays."
+              dialogDescription={`They lose their role on this ${scopeNoun} right away. Their account stays.`}
               disableConfirmationInput
               submitButtonText="Remove"
               deletingEntityName={member.email}
@@ -90,7 +90,7 @@ export default function MemberCard({ member, isPlaceholder }: TProps) {
               onDialogClose={removeReset}
               error={removeError}
               onSubmit={async () => {
-                await removeMember({ teamId, userId: member.id });
+                await removeMember({ teamId, projectId, userId: member.id });
               }}
             >
               <Button

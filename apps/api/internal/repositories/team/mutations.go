@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
@@ -91,6 +92,43 @@ func (self *TeamRepository) EnsureRoleGroups(ctx context.Context, tx repository.
 	if err != nil {
 		return nil, err
 	}
+	return ensureRoleGroups(ctx, db, existing, roleGroupOwner{
+		resourceType: schema.ResourceTypeTeam,
+		resourceID:   team.ID,
+		name:         func(role schema.PermittedAction) string { return RoleGroupName(team, role) },
+		description:  fmt.Sprintf("role on team %s", team.Name),
+		own:          func(create *ent.GroupCreate) { create.SetTeamID(team.ID) },
+	})
+}
+
+func (self *TeamRepository) EnsureProjectRoleGroups(ctx context.Context, tx repository.TxInterface, project *ent.Project) ([]*ent.Group, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+
+	existing, err := db.Group.Query().Where(group.ProjectID(project.ID)).WithUsers().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ensureRoleGroups(ctx, db, existing, roleGroupOwner{
+		resourceType: schema.ResourceTypeProject,
+		resourceID:   project.ID,
+		name:         func(role schema.PermittedAction) string { return ProjectRoleGroupName(project, role) },
+		description:  fmt.Sprintf("role on project %s", project.Name),
+		own:          func(create *ent.GroupCreate) { create.SetProjectID(project.ID) },
+	})
+}
+
+type roleGroupOwner struct {
+	resourceType schema.ResourceType
+	resourceID   uuid.UUID
+	name         func(role schema.PermittedAction) string
+	description  string
+	own          func(create *ent.GroupCreate)
+}
+
+func ensureRoleGroups(ctx context.Context, db *ent.Client, existing []*ent.Group, owner roleGroupOwner) ([]*ent.Group, error) {
 	byRole := map[schema.PermittedAction]*ent.Group{}
 	for _, group := range existing {
 		if group.Role != nil {
@@ -107,20 +145,20 @@ func (self *TeamRepository) EnsureRoleGroups(ctx context.Context, tx repository.
 
 		perm, err := db.Permission.Create().
 			SetAction(role).
-			SetResourceType(schema.ResourceTypeTeam).
-			SetResourceSelector(schema.ResourceSelector{ID: team.ID}).
+			SetResourceType(owner.resourceType).
+			SetResourceSelector(schema.ResourceSelector{ID: owner.resourceID}).
 			Save(ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		group, err := db.Group.Create().
-			SetName(RoleGroupName(team, role)).
-			SetDescription(fmt.Sprintf("%s role on team %s", role, team.Name)).
-			SetTeamID(team.ID).
+		create := db.Group.Create().
+			SetName(owner.name(role)).
+			SetDescription(fmt.Sprintf("%s %s", role, owner.description)).
 			SetRole(role).
-			AddPermissions(perm).
-			Save(ctx)
+			AddPermissions(perm)
+		owner.own(create)
+		group, err := create.Save(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -134,4 +172,8 @@ func (self *TeamRepository) EnsureRoleGroups(ctx context.Context, tx repository.
 // the Kubernetes RoleBinding subject and the token's groups claim carry.
 func RoleGroupName(team *ent.Team, role schema.PermittedAction) string {
 	return fmt.Sprintf("team-%s-%s", team.KubernetesName, role)
+}
+
+func ProjectRoleGroupName(project *ent.Project, role schema.PermittedAction) string {
+	return fmt.Sprintf("project-%s-%s", project.KubernetesName, role)
 }

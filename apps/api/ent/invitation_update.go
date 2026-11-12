@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -129,6 +130,26 @@ func (_u *InvitationUpdate) SetNillableTeamID(v *uuid.UUID) *InvitationUpdate {
 	return _u
 }
 
+// SetProjectID sets the "project_id" field.
+func (_u *InvitationUpdate) SetProjectID(v uuid.UUID) *InvitationUpdate {
+	_u.mutation.SetProjectID(v)
+	return _u
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_u *InvitationUpdate) SetNillableProjectID(v *uuid.UUID) *InvitationUpdate {
+	if v != nil {
+		_u.SetProjectID(*v)
+	}
+	return _u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (_u *InvitationUpdate) ClearProjectID() *InvitationUpdate {
+	_u.mutation.ClearProjectID()
+	return _u
+}
+
 // SetInvitedBy sets the "invited_by" field.
 func (_u *InvitationUpdate) SetInvitedBy(v uuid.UUID) *InvitationUpdate {
 	_u.mutation.SetInvitedBy(v)
@@ -152,6 +173,11 @@ func (_u *InvitationUpdate) ClearInvitedBy() *InvitationUpdate {
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *InvitationUpdate) SetTeam(v *Team) *InvitationUpdate {
 	return _u.SetTeamID(v.ID)
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (_u *InvitationUpdate) SetProject(v *Project) *InvitationUpdate {
+	return _u.SetProjectID(v.ID)
 }
 
 // SetInviterID sets the "inviter" edge to the User entity by ID.
@@ -181,6 +207,12 @@ func (_u *InvitationUpdate) Mutation() *InvitationMutation {
 // ClearTeam clears the "team" edge to the Team entity.
 func (_u *InvitationUpdate) ClearTeam() *InvitationUpdate {
 	_u.mutation.ClearTeam()
+	return _u
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *InvitationUpdate) ClearProject() *InvitationUpdate {
+	_u.mutation.ClearProject()
 	return _u
 }
 
@@ -305,6 +337,35 @@ func (_u *InvitationUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invitation.ProjectTable,
+			Columns: []string{invitation.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invitation.ProjectTable,
+			Columns: []string{invitation.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -459,6 +520,26 @@ func (_u *InvitationUpdateOne) SetNillableTeamID(v *uuid.UUID) *InvitationUpdate
 	return _u
 }
 
+// SetProjectID sets the "project_id" field.
+func (_u *InvitationUpdateOne) SetProjectID(v uuid.UUID) *InvitationUpdateOne {
+	_u.mutation.SetProjectID(v)
+	return _u
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_u *InvitationUpdateOne) SetNillableProjectID(v *uuid.UUID) *InvitationUpdateOne {
+	if v != nil {
+		_u.SetProjectID(*v)
+	}
+	return _u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (_u *InvitationUpdateOne) ClearProjectID() *InvitationUpdateOne {
+	_u.mutation.ClearProjectID()
+	return _u
+}
+
 // SetInvitedBy sets the "invited_by" field.
 func (_u *InvitationUpdateOne) SetInvitedBy(v uuid.UUID) *InvitationUpdateOne {
 	_u.mutation.SetInvitedBy(v)
@@ -482,6 +563,11 @@ func (_u *InvitationUpdateOne) ClearInvitedBy() *InvitationUpdateOne {
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *InvitationUpdateOne) SetTeam(v *Team) *InvitationUpdateOne {
 	return _u.SetTeamID(v.ID)
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (_u *InvitationUpdateOne) SetProject(v *Project) *InvitationUpdateOne {
+	return _u.SetProjectID(v.ID)
 }
 
 // SetInviterID sets the "inviter" edge to the User entity by ID.
@@ -511,6 +597,12 @@ func (_u *InvitationUpdateOne) Mutation() *InvitationMutation {
 // ClearTeam clears the "team" edge to the Team entity.
 func (_u *InvitationUpdateOne) ClearTeam() *InvitationUpdateOne {
 	_u.mutation.ClearTeam()
+	return _u
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *InvitationUpdateOne) ClearProject() *InvitationUpdateOne {
+	_u.mutation.ClearProject()
 	return _u
 }
 
@@ -665,6 +757,35 @@ func (_u *InvitationUpdateOne) sqlSave(ctx context.Context) (_node *Invitation, 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invitation.ProjectTable,
+			Columns: []string{invitation.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invitation.ProjectTable,
+			Columns: []string{invitation.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
@@ -455,6 +457,24 @@ func (suite *ProjectMutationsSuite) TestDelete() {
 	// Verify it's gone
 	_, err = suite.DB.Project.Get(suite.Ctx, project.ID)
 	suite.Error(err)
+}
+
+func (suite *ProjectMutationsSuite) TestDeleteRemovesRoleGroupsAndGrantsNamingTheProject() {
+	doomed := suite.DB.Project.Create().SetTeamID(suite.testTeam.ID).SetKubernetesName("doomed-k8s").SetName("Doomed").SetKubernetesSecret("test-secret").SaveX(suite.Ctx)
+	kept := suite.DB.Project.Create().SetTeamID(suite.testTeam.ID).SetKubernetesName("kept-k8s").SetName("Kept").SetKubernetesSecret("test-secret").SaveX(suite.Ctx)
+	grant := func(projectID uuid.UUID) *ent.Permission {
+		return suite.DB.Permission.Create().SetAction(schema.ActionEditor).SetResourceType(schema.ResourceTypeProject).SetResourceSelector(schema.ResourceSelector{ID: projectID}).SaveX(suite.Ctx)
+	}
+	suite.DB.Group.Create().SetName("project-doomed-k8s-editor").SetProjectID(doomed.ID).SetRole(schema.ActionEditor).AddPermissions(grant(doomed.ID)).AddUsers(suite.testUser).SaveX(suite.Ctx)
+	suite.DB.Group.Create().SetName("custom").AddPermissions(grant(doomed.ID), grant(kept.ID)).SaveX(suite.Ctx)
+
+	suite.Require().NoError(suite.projectRepo.Delete(suite.Ctx, nil, doomed.ID))
+
+	suite.Equal(0, suite.DB.Group.Query().Where(group.ProjectID(doomed.ID)).CountX(suite.Ctx))
+	suite.Equal(1, suite.DB.Group.Query().CountX(suite.Ctx))
+	remaining := suite.DB.Permission.Query().AllX(suite.Ctx)
+	suite.Require().Len(remaining, 1)
+	suite.Equal(kept.ID, remaining[0].ResourceSelector.ID)
 }
 
 func (suite *ProjectMutationsSuite) TestDeleteWithTransaction() {

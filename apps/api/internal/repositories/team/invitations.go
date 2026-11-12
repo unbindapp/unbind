@@ -7,11 +7,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/invitation"
+	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 type CreateInvitationInput struct {
 	TeamID    uuid.UUID
+	ProjectID *uuid.UUID
 	Email     string
 	Role      schema.PermittedAction
 	TokenHash string
@@ -19,16 +21,18 @@ type CreateInvitationInput struct {
 	InvitedBy uuid.UUID
 }
 
-// CreateInvitation replaces any pending invitation for the same address on the team.
+// CreateInvitation replaces any pending invitation for the same address on the
+// same team or project.
 func (self *TeamRepository) CreateInvitation(ctx context.Context, input *CreateInvitationInput) (*ent.Invitation, error) {
 	_, err := self.base.DB.Invitation.Delete().
-		Where(invitation.TeamID(input.TeamID), invitation.EmailEqualFold(input.Email), invitation.AcceptedAtIsNil()).
+		Where(invitation.TeamID(input.TeamID), invitedTo(input.ProjectID), invitation.EmailEqualFold(input.Email), invitation.AcceptedAtIsNil()).
 		Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return self.base.DB.Invitation.Create().
 		SetTeamID(input.TeamID).
+		SetNillableProjectID(input.ProjectID).
 		SetEmail(input.Email).
 		SetRole(input.Role).
 		SetTokenHash(input.TokenHash).
@@ -41,19 +45,20 @@ func (self *TeamRepository) GetInvitationByTokenHash(ctx context.Context, tokenH
 	return self.base.DB.Invitation.Query().
 		Where(invitation.TokenHash(tokenHash)).
 		WithTeam().
+		WithProject().
 		Only(ctx)
 }
 
-func (self *TeamRepository) GetPendingInvitations(ctx context.Context, teamID uuid.UUID) ([]*ent.Invitation, error) {
+func (self *TeamRepository) GetPendingInvitations(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID) ([]*ent.Invitation, error) {
 	return self.base.DB.Invitation.Query().
-		Where(invitation.TeamID(teamID), invitation.AcceptedAtIsNil(), invitation.ExpiresAtGT(time.Now())).
+		Where(invitation.TeamID(teamID), invitedTo(projectID), invitation.AcceptedAtIsNil(), invitation.ExpiresAtGT(time.Now())).
 		Order(ent.Asc(invitation.FieldEmail)).
 		All(ctx)
 }
 
-func (self *TeamRepository) DeleteInvitation(ctx context.Context, teamID, invitationID uuid.UUID) error {
+func (self *TeamRepository) DeleteInvitation(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID, invitationID uuid.UUID) error {
 	deleted, err := self.base.DB.Invitation.Delete().
-		Where(invitation.ID(invitationID), invitation.TeamID(teamID)).
+		Where(invitation.ID(invitationID), invitation.TeamID(teamID), invitedTo(projectID)).
 		Exec(ctx)
 	if err != nil {
 		return err
@@ -66,4 +71,11 @@ func (self *TeamRepository) DeleteInvitation(ctx context.Context, teamID, invita
 
 func (self *TeamRepository) MarkInvitationAccepted(ctx context.Context, invitationID uuid.UUID) error {
 	return self.base.DB.Invitation.UpdateOneID(invitationID).SetAcceptedAt(time.Now()).Exec(ctx)
+}
+
+func invitedTo(projectID *uuid.UUID) predicate.Invitation {
+	if projectID == nil {
+		return invitation.ProjectIDIsNil()
+	}
+	return invitation.ProjectID(*projectID)
 }

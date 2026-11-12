@@ -14,16 +14,7 @@ import (
 )
 
 func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserID uuid.UUID, input *models.MetricsVolumeQueryInput) (*models.VolumeMetricsResult, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		//Can read team, project, environmnent, or service depending on inputs
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		},
-	}
-
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().CheckVisible(ctx, requesterUserID, schema.ResourceTypeTeam, input.TeamID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 
@@ -33,6 +24,14 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Team not found")
 		}
 		return nil, err
+	}
+
+	volume, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.PVCID, self.k8s.GetInternalClient())
+	if err != nil {
+		return nil, err
+	}
+	if err := self.repo.Permissions().Check(ctx, requesterUserID, volumeViewChecks(volume)); err != nil {
+		return nil, errdefs.MaskAsNotFound(err, fmt.Sprintf("PersistentVolumeClaim '%s' not found", input.PVCID))
 	}
 
 	var start time.Time
@@ -71,4 +70,17 @@ func (self *MetricsService) GetVolumeMetrics(ctx context.Context, requesterUserI
 	}
 
 	return models.TransformVolumeStatsEntity(rawMetrics, step), nil
+}
+
+func volumeViewChecks(volume *models.PVCInfo) []permissions_repo.PermissionCheck {
+	checks := []permissions_repo.PermissionCheck{
+		{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeTeam, ResourceID: volume.TeamID},
+	}
+	if volume.ProjectID != nil {
+		checks = append(checks, permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: *volume.ProjectID})
+	}
+	if volume.EnvironmentID != nil {
+		checks = append(checks, permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeEnvironment, ResourceID: *volume.EnvironmentID})
+	}
+	return checks
 }

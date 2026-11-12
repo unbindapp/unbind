@@ -224,6 +224,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "k8s_role_name", Type: field.TypeString, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "project_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// GroupsTable holds the schema information for the "groups" table.
@@ -233,8 +234,14 @@ var (
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "groups_teams_role_groups",
+				Symbol:     "groups_projects_role_groups",
 				Columns:    []*schema.Column{GroupsColumns[7]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "groups_teams_role_groups",
+				Columns:    []*schema.Column{GroupsColumns[8]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -242,6 +249,11 @@ var (
 		Indexes: []*schema.Index{
 			{
 				Name:    "group_team_id_role",
+				Unique:  true,
+				Columns: []*schema.Column{GroupsColumns[8], GroupsColumns[6]},
+			},
+			{
+				Name:    "group_project_id_role",
 				Unique:  true,
 				Columns: []*schema.Column{GroupsColumns[7], GroupsColumns[6]},
 			},
@@ -257,6 +269,7 @@ var (
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "project_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "team_id", Type: field.TypeUUID},
 		{Name: "invited_by", Type: field.TypeUUID, Nullable: true},
 	}
@@ -267,14 +280,20 @@ var (
 		PrimaryKey: []*schema.Column{InvitationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "invitations_teams_invitations",
+				Symbol:     "invitations_projects_invitations",
 				Columns:    []*schema.Column{InvitationsColumns[8]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "invitations_teams_invitations",
+				Columns:    []*schema.Column{InvitationsColumns[9]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "invitations_users_sent_invitations",
-				Columns:    []*schema.Column{InvitationsColumns[9]},
+				Columns:    []*schema.Column{InvitationsColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -282,6 +301,11 @@ var (
 		Indexes: []*schema.Index{
 			{
 				Name:    "invitation_team_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvitationsColumns[9]},
+			},
+			{
+				Name:    "invitation_project_id",
 				Unique:  false,
 				Columns: []*schema.Column{InvitationsColumns[8]},
 			},
@@ -1121,12 +1145,14 @@ func init() {
 	GithubInstallationsTable.Annotation = &entsql.Annotation{
 		Table: "github_installations",
 	}
-	GroupsTable.ForeignKeys[0].RefTable = TeamsTable
+	GroupsTable.ForeignKeys[0].RefTable = ProjectsTable
+	GroupsTable.ForeignKeys[1].RefTable = TeamsTable
 	GroupsTable.Annotation = &entsql.Annotation{
 		Table: "groups",
 	}
-	InvitationsTable.ForeignKeys[0].RefTable = TeamsTable
-	InvitationsTable.ForeignKeys[1].RefTable = UsersTable
+	InvitationsTable.ForeignKeys[0].RefTable = ProjectsTable
+	InvitationsTable.ForeignKeys[1].RefTable = TeamsTable
+	InvitationsTable.ForeignKeys[2].RefTable = UsersTable
 	InvitationsTable.Annotation = &entsql.Annotation{
 		Table: "invitations",
 	}

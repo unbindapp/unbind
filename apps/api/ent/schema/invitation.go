@@ -11,8 +11,9 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
 
-// Invitation is a pending offer of a role on a team to an email address. The
-// token is only ever stored hashed; the link holding it goes to the invitee.
+// Invitation is a pending offer of a role to an email address, on a team or on
+// one of its projects when project_id is set. The token is only ever stored
+// hashed; the link holding it goes to the invitee.
 type Invitation struct {
 	ent.Schema
 }
@@ -32,6 +33,7 @@ func (Invitation) Fields() []ent.Field {
 		field.Time("expires_at"),
 		field.Time("accepted_at").Optional().Nillable(),
 		field.UUID("team_id", uuid.UUID{}),
+		field.UUID("project_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("invited_by", uuid.UUID{}).Optional().Nillable(),
 	}
 }
@@ -39,6 +41,7 @@ func (Invitation) Fields() []ent.Field {
 func (Invitation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("team", Team.Type).Ref("invitations").Field("team_id").Unique().Required(),
+		edge.From("project", Project.Type).Ref("invitations").Field("project_id").Unique(),
 		edge.From("inviter", User.Type).Ref("sent_invitations").Field("invited_by").Unique(),
 	}
 }
@@ -46,6 +49,7 @@ func (Invitation) Edges() []ent.Edge {
 func (Invitation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("team_id"),
+		index.Fields("project_id"),
 	}
 }
 

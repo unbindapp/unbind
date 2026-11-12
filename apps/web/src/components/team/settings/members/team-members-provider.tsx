@@ -1,6 +1,5 @@
 "use client";
 
-import { useTeam } from "@/components/team/team-provider";
 import {
   queryKeyTeams,
   teamInvitationsQuery,
@@ -13,6 +12,8 @@ import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TContext = {
   teamId: string;
+  projectId?: string;
+  scopeNoun: "team" | "project";
   canManage: boolean;
   members: UseQueryResult<{ members: TTeamMember[] }, Error>;
   invitations: UseQueryResult<{ invitations: TTeamInvitation[] }, Error>;
@@ -20,18 +21,30 @@ type TContext = {
 
 const TeamMembersContext = createContext<TContext | null>(null);
 
-export function TeamMembersProvider({ children }: { children: ReactNode }) {
-  const {
-    teamId,
-    query: { data: teamData },
-  } = useTeam();
-  const canManage = teamData?.team.permissions.includes("admin") ?? false;
-  const members = useQuery(teamMembersQuery({ teamId }));
-  const invitations = useQuery({ ...teamInvitationsQuery({ teamId }), enabled: canManage });
+type TProps = {
+  teamId: string;
+  projectId?: string;
+  canManage: boolean;
+  children: ReactNode;
+};
+
+export function TeamMembersProvider({ teamId, projectId, canManage, children }: TProps) {
+  const members = useQuery(teamMembersQuery({ teamId, projectId }));
+  const invitations = useQuery({
+    ...teamInvitationsQuery({ teamId, projectId }),
+    enabled: canManage,
+  });
 
   const value = useMemo(
-    () => ({ teamId, canManage, members, invitations }),
-    [teamId, canManage, members, invitations],
+    () => ({
+      teamId,
+      projectId,
+      scopeNoun: projectId ? ("project" as const) : ("team" as const),
+      canManage,
+      members,
+      invitations,
+    }),
+    [teamId, projectId, canManage, members, invitations],
   );
   return <TeamMembersContext.Provider value={value}>{children}</TeamMembersContext.Provider>;
 }
@@ -46,12 +59,14 @@ export function useTeamMembers() {
 
 export function useTeamMembersUtils() {
   const queryClient = useQueryClient();
-  const { teamId } = useTeam();
+  const { teamId, projectId } = useTeamMembers();
   return {
     invalidate: () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeyTeams.members({ teamId }) }),
-        queryClient.invalidateQueries({ queryKey: queryKeyTeams.invitations({ teamId }) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyTeams.members({ teamId, projectId }) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeyTeams.invitations({ teamId, projectId }),
+        }),
       ]),
   };
 }

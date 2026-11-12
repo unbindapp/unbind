@@ -13,7 +13,8 @@ type GroupResponse struct {
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
 	TeamID      *uuid.UUID              `json:"team_id,omitempty" format:"uuid" doc:"Set when the group is a role group owned by a team; such groups are managed through the team's members"`
-	Role        *schema.PermittedAction `json:"role,omitempty" doc:"The role a team role group grants on its team"`
+	ProjectID   *uuid.UUID              `json:"project_id,omitempty" format:"uuid" doc:"Set when the group is a role group owned by a project; such groups are managed through the project's members"`
+	Role        *schema.PermittedAction `json:"role,omitempty" doc:"The role a role group grants on its team or project"`
 	CreatedAt   time.Time               `json:"created_at"`
 }
 
@@ -26,6 +27,7 @@ func TransformGroupEntity(entity *ent.Group) *GroupResponse {
 			Name:        entity.Name,
 			Description: entity.Description,
 			TeamID:      entity.TeamID,
+			ProjectID:   entity.ProjectID,
 			Role:        entity.Role,
 			CreatedAt:   entity.CreatedAt,
 		}

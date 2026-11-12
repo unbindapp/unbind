@@ -30,14 +30,16 @@ type Mailer interface {
 }
 
 type InviteMemberInput struct {
-	TeamID uuid.UUID              `json:"team_id" format:"uuid" required:"true"`
-	Email  string                 `json:"email" format:"email" required:"true"`
-	Role   schema.PermittedAction `json:"role" required:"true" doc:"admin, editor or viewer on this team"`
+	TeamID    uuid.UUID              `json:"team_id" format:"uuid" required:"true"`
+	ProjectID *uuid.UUID             `json:"project_id,omitempty" format:"uuid" required:"false" doc:"Set to invite to this project of the team only"`
+	Email     string                 `json:"email" format:"email" required:"true"`
+	Role      schema.PermittedAction `json:"role" required:"true" doc:"admin, editor or viewer on this team or project"`
 }
 
 type RevokeInvitationInput struct {
-	TeamID       uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-	InvitationID uuid.UUID `json:"invitation_id" format:"uuid" required:"true"`
+	TeamID       uuid.UUID  `json:"team_id" format:"uuid" required:"true"`
+	ProjectID    *uuid.UUID `json:"project_id,omitempty" format:"uuid" required:"false" doc:"Set when the invitation is to this project of the team"`
+	InvitationID uuid.UUID  `json:"invitation_id" format:"uuid" required:"true"`
 }
 
 type AcceptInvitationInput struct {
@@ -45,14 +47,15 @@ type AcceptInvitationInput struct {
 	Password string `json:"password" required:"false" minLength:"8" doc:"Required unless an account with the invited email already exists"`
 }
 
-// InviteMember adds an existing account to the team at once, or records an
-// invitation for a new one and mails the link when a relay is configured. The
-// link always comes back to the inviter so it can be shared by hand.
+// InviteMember adds an existing account to the team or project at once, or
+// records an invitation for a new one and mails the link when a relay is
+// configured. The link always comes back to the inviter so it can be shared by hand.
 func (self *TeamService) InviteMember(ctx context.Context, requesterUserID uuid.UUID, input *InviteMemberInput) (*models.InviteMemberResponse, error) {
 	if err := validateMemberRole(input.Role); err != nil {
 		return nil, err
 	}
-	if err := self.checkTeam(ctx, requesterUserID, schema.ActionAdmin, input.TeamID); err != nil {
+	project, err := self.authorize(ctx, requesterUserID, schema.ActionAdmin, input.TeamID, input.ProjectID)
+	if err != nil {
 		return nil, err
 	}
 	email := strings.TrimSpace(strings.ToLower(input.Email))
@@ -65,17 +68,18 @@ func (self *TeamService) InviteMember(ctx context.Context, requesterUserID uuid.
 	if err != nil {
 		return nil, err
 	}
+	joined := self.newJoinedResource(team, project)
 
 	_, err = self.repo.User().GetByEmail(ctx, email)
 	if err != nil && !ent.IsNotFound(err) {
 		return nil, err
 	}
 	if err == nil {
-		member, err := self.AddMember(ctx, requesterUserID, &TeamMemberAddInput{TeamID: input.TeamID, Email: email, Role: input.Role})
+		member, err := self.AddMember(ctx, requesterUserID, &TeamMemberAddInput{TeamID: input.TeamID, ProjectID: input.ProjectID, Email: email, Role: input.Role})
 		if err != nil {
 			return nil, err
 		}
-		self.notifyAdded(ctx, member.Email, team, inviter.Email, input.Role)
+		self.notifyAdded(ctx, member.Email, joined, inviter.Email, input.Role)
 		return &models.InviteMemberResponse{Member: member}, nil
 	}
 
@@ -85,6 +89,7 @@ func (self *TeamService) InviteMember(ctx context.Context, requesterUserID uuid.
 	}
 	invitation, err := self.repo.Team().CreateInvitation(ctx, &team_repo.CreateInvitationInput{
 		TeamID:    input.TeamID,
+		ProjectID: input.ProjectID,
 		Email:     email,
 		Role:      input.Role,
 		TokenHash: tokenHash,
@@ -98,9 +103,9 @@ func (self *TeamService) InviteMember(ctx context.Context, requesterUserID uuid.
 	resp := models.TransformInvitationEntity(invitation)
 	resp.InviteURL, _ = utils.JoinURLPaths(self.cfg.ExternalUIUrl, "invite", token)
 	resp.EmailSent, err = self.mailer.Send(ctx, email, mail.Content{
-		Subject:     fmt.Sprintf("%s invited you to %s on Unbind", inviter.Email, team.Name),
-		Heading:     fmt.Sprintf("Join %s", team.Name),
-		Paragraphs:  []string{fmt.Sprintf("%s invited you to the team %s as %s.", inviter.Email, team.Name, input.Role), "Accept the invitation to create your account and get started."},
+		Subject:     fmt.Sprintf("%s invited you to %s on Unbind", inviter.Email, joined.name),
+		Heading:     fmt.Sprintf("Join %s", joined.name),
+		Paragraphs:  []string{fmt.Sprintf("%s invited you to %s as %s.", inviter.Email, joined.description, input.Role), "Accept the invitation to create your account and get started."},
 		ButtonLabel: "Accept invitation",
 		ButtonURL:   resp.InviteURL,
 		Note:        "This invitation expires in 7 days. If you were not expecting it, you can ignore this email.",
@@ -111,11 +116,11 @@ func (self *TeamService) InviteMember(ctx context.Context, requesterUserID uuid.
 	return &models.InviteMemberResponse{Invitation: resp}, nil
 }
 
-func (self *TeamService) ListInvitations(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID) ([]*models.InvitationResponse, error) {
-	if err := self.checkTeam(ctx, requesterUserID, schema.ActionAdmin, teamID); err != nil {
+func (self *TeamService) ListInvitations(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID *uuid.UUID) ([]*models.InvitationResponse, error) {
+	if _, err := self.authorize(ctx, requesterUserID, schema.ActionAdmin, teamID, projectID); err != nil {
 		return nil, err
 	}
-	invitations, err := self.repo.Team().GetPendingInvitations(ctx, teamID)
+	invitations, err := self.repo.Team().GetPendingInvitations(ctx, teamID, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -123,10 +128,10 @@ func (self *TeamService) ListInvitations(ctx context.Context, requesterUserID uu
 }
 
 func (self *TeamService) RevokeInvitation(ctx context.Context, requesterUserID uuid.UUID, input *RevokeInvitationInput) error {
-	if err := self.checkTeam(ctx, requesterUserID, schema.ActionAdmin, input.TeamID); err != nil {
+	if _, err := self.authorize(ctx, requesterUserID, schema.ActionAdmin, input.TeamID, input.ProjectID); err != nil {
 		return err
 	}
-	return self.repo.Team().DeleteInvitation(ctx, input.TeamID, input.InvitationID)
+	return self.repo.Team().DeleteInvitation(ctx, input.TeamID, input.ProjectID, input.InvitationID)
 }
 
 // GetInvitation is public: holding the token is the only credential.
@@ -139,17 +144,22 @@ func (self *TeamService) GetInvitation(ctx context.Context, token string) (*mode
 	if err != nil && !ent.IsNotFound(err) {
 		return nil, err
 	}
-	return &models.InvitationPreviewResponse{
+	preview := &models.InvitationPreviewResponse{
 		Email:         invitation.Email,
 		TeamName:      invitation.Edges.Team.Name,
 		Role:          invitation.Role,
 		ExpiresAt:     invitation.ExpiresAt,
 		AccountExists: err == nil,
-	}, nil
+	}
+	if invitation.Edges.Project != nil {
+		preview.ProjectName = &invitation.Edges.Project.Name
+	}
+	return preview, nil
 }
 
 // AcceptInvitation is public. It creates the account when none exists for the
-// invited email, puts it on the team at the invited role and spends the token.
+// invited email, puts it on the team or project at the invited role and spends
+// the token.
 func (self *TeamService) AcceptInvitation(ctx context.Context, input *AcceptInvitationInput) (*models.UserResponse, error) {
 	invitation, err := self.pendingInvitation(ctx, input.Token)
 	if err != nil {
@@ -170,14 +180,14 @@ func (self *TeamService) AcceptInvitation(ctx context.Context, input *AcceptInvi
 		}
 	}
 
-	roleGroups, err := self.repo.Team().GetRoleGroups(ctx, invitation.TeamID)
+	roleGroups, err := self.roleGroupsToJoin(ctx, invitation.TeamID, invitation.Edges.Project)
 	if err != nil {
 		return nil, err
 	}
 	if groupHoldingUser(roleGroups, user.ID) == nil {
 		target := roleGroup(roleGroups, invitation.Role)
 		if target == nil {
-			return nil, fmt.Errorf("team %s has no %s role group", invitation.TeamID, invitation.Role)
+			return nil, missingRoleGroup(invitation.TeamID, invitation.ProjectID, invitation.Role)
 		}
 		if err := self.repo.Group().AddUser(ctx, target.ID, user.ID); err != nil {
 			return nil, err
@@ -202,20 +212,38 @@ func (self *TeamService) pendingInvitation(ctx context.Context, token string) (*
 	if invitation.AcceptedAt != nil || time.Now().After(invitation.ExpiresAt) || invitation.Edges.Team == nil {
 		return nil, invalid
 	}
+	if invitation.ProjectID != nil && invitation.Edges.Project == nil {
+		return nil, invalid
+	}
 	return invitation, nil
 }
 
-func (self *TeamService) notifyAdded(ctx context.Context, to string, team *ent.Team, by string, role schema.PermittedAction) {
-	url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, team.ID.String())
+type joinedResource struct {
+	kind        string
+	name        string
+	description string
+	url         string
+}
+
+func (self *TeamService) newJoinedResource(team *ent.Team, project *ent.Project) joinedResource {
+	if project == nil {
+		url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, team.ID.String())
+		return joinedResource{kind: "team", name: team.Name, description: fmt.Sprintf("the team %s", team.Name), url: url}
+	}
+	url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, team.ID.String(), "project", project.ID.String())
+	return joinedResource{kind: "project", name: project.Name, description: fmt.Sprintf("the project %s in the team %s", project.Name, team.Name), url: url}
+}
+
+func (self *TeamService) notifyAdded(ctx context.Context, to string, joined joinedResource, by string, role schema.PermittedAction) {
 	_, err := self.mailer.Send(ctx, to, mail.Content{
-		Subject:     fmt.Sprintf("You were added to %s on Unbind", team.Name),
-		Heading:     fmt.Sprintf("You are now on %s", team.Name),
-		Paragraphs:  []string{fmt.Sprintf("%s added you to the team %s as %s.", by, team.Name, role)},
-		ButtonLabel: "Open the team",
-		ButtonURL:   url,
+		Subject:     fmt.Sprintf("You were added to %s on Unbind", joined.name),
+		Heading:     fmt.Sprintf("You are now on %s", joined.name),
+		Paragraphs:  []string{fmt.Sprintf("%s added you to %s as %s.", by, joined.description, role)},
+		ButtonLabel: fmt.Sprintf("Open the %s", joined.kind),
+		ButtonURL:   joined.url,
 	})
 	if err != nil {
-		log.Warnf("Failed to email team notification to %s: %v", to, err)
+		log.Warnf("Failed to email %s notification to %s: %v", joined.kind, to, err)
 	}
 }
 

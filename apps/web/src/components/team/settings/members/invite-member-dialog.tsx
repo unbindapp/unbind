@@ -3,7 +3,10 @@
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import RoleSelect from "@/components/team/settings/members/role-select";
-import { useTeamMembersUtils } from "@/components/team/settings/members/team-members-provider";
+import {
+  useTeamMembers,
+  useTeamMembersUtils,
+} from "@/components/team/settings/members/team-members-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,11 +27,11 @@ import { ReactElement, useRef, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
-  teamId: string;
   children: ReactElement;
 };
 
-export default function InviteMemberDialog({ teamId, children }: TProps) {
+export default function InviteMemberDialog({ children }: TProps) {
+  const { teamId, projectId, scopeNoun } = useTeamMembers();
   const { invalidate } = useTeamMembersUtils();
   const [open, setOpen] = useState(false);
   const [invitation, setInvitation] = useState<TTeamInvitation | null>(null);
@@ -53,7 +56,7 @@ export default function InviteMemberDialog({ teamId, children }: TProps) {
         .strip(),
     },
     onSubmit: async ({ formApi, value }) => {
-      const res = await invite({ teamId, email: value.email, role: value.role });
+      const res = await invite({ teamId, projectId, email: value.email, role: value.role });
       await invalidate();
       formApi.reset();
       if (res.data.invitation) {
@@ -64,7 +67,7 @@ export default function InviteMemberDialog({ teamId, children }: TProps) {
       toast.add({
         type: "success",
         title: "Added",
-        description: `${res.data.member?.email} already had an account and is now on the team.`,
+        description: `${res.data.member?.email} already had an account and is now on the ${scopeNoun}.`,
       });
     },
   });

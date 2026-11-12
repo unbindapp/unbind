@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -114,6 +115,26 @@ func (_u *GroupUpdate) ClearTeamID() *GroupUpdate {
 	return _u
 }
 
+// SetProjectID sets the "project_id" field.
+func (_u *GroupUpdate) SetProjectID(v uuid.UUID) *GroupUpdate {
+	_u.mutation.SetProjectID(v)
+	return _u
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableProjectID(v *uuid.UUID) *GroupUpdate {
+	if v != nil {
+		_u.SetProjectID(*v)
+	}
+	return _u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (_u *GroupUpdate) ClearProjectID() *GroupUpdate {
+	_u.mutation.ClearProjectID()
+	return _u
+}
+
 // SetRole sets the "role" field.
 func (_u *GroupUpdate) SetRole(v schema.PermittedAction) *GroupUpdate {
 	_u.mutation.SetRole(v)
@@ -169,6 +190,11 @@ func (_u *GroupUpdate) SetTeam(v *Team) *GroupUpdate {
 	return _u.SetTeamID(v.ID)
 }
 
+// SetProject sets the "project" edge to the Project entity.
+func (_u *GroupUpdate) SetProject(v *Project) *GroupUpdate {
+	return _u.SetProjectID(v.ID)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdate) Mutation() *GroupMutation {
 	return _u.mutation
@@ -219,6 +245,12 @@ func (_u *GroupUpdate) RemovePermissions(v ...*Permission) *GroupUpdate {
 // ClearTeam clears the "team" edge to the Team entity.
 func (_u *GroupUpdate) ClearTeam() *GroupUpdate {
 	_u.mutation.ClearTeam()
+	return _u
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *GroupUpdate) ClearProject() *GroupUpdate {
+	_u.mutation.ClearProject()
 	return _u
 }
 
@@ -434,6 +466,35 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ProjectTable,
+			Columns: []string{group.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ProjectTable,
+			Columns: []string{group.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -536,6 +597,26 @@ func (_u *GroupUpdateOne) ClearTeamID() *GroupUpdateOne {
 	return _u
 }
 
+// SetProjectID sets the "project_id" field.
+func (_u *GroupUpdateOne) SetProjectID(v uuid.UUID) *GroupUpdateOne {
+	_u.mutation.SetProjectID(v)
+	return _u
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableProjectID(v *uuid.UUID) *GroupUpdateOne {
+	if v != nil {
+		_u.SetProjectID(*v)
+	}
+	return _u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (_u *GroupUpdateOne) ClearProjectID() *GroupUpdateOne {
+	_u.mutation.ClearProjectID()
+	return _u
+}
+
 // SetRole sets the "role" field.
 func (_u *GroupUpdateOne) SetRole(v schema.PermittedAction) *GroupUpdateOne {
 	_u.mutation.SetRole(v)
@@ -591,6 +672,11 @@ func (_u *GroupUpdateOne) SetTeam(v *Team) *GroupUpdateOne {
 	return _u.SetTeamID(v.ID)
 }
 
+// SetProject sets the "project" edge to the Project entity.
+func (_u *GroupUpdateOne) SetProject(v *Project) *GroupUpdateOne {
+	return _u.SetProjectID(v.ID)
+}
+
 // Mutation returns the GroupMutation object of the builder.
 func (_u *GroupUpdateOne) Mutation() *GroupMutation {
 	return _u.mutation
@@ -641,6 +727,12 @@ func (_u *GroupUpdateOne) RemovePermissions(v ...*Permission) *GroupUpdateOne {
 // ClearTeam clears the "team" edge to the Team entity.
 func (_u *GroupUpdateOne) ClearTeam() *GroupUpdateOne {
 	_u.mutation.ClearTeam()
+	return _u
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *GroupUpdateOne) ClearProject() *GroupUpdateOne {
+	_u.mutation.ClearProject()
 	return _u
 }
 
@@ -879,6 +971,35 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ProjectTable,
+			Columns: []string{group.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ProjectTable,
+			Columns: []string{group.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

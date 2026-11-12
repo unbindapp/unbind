@@ -31,7 +31,8 @@ func (Group) Fields() []ent.Field {
 		field.String("description").Optional(),
 		field.String("k8s_role_name").Optional().Nillable().Comment("Reference to the Kubernetes Role name"),
 		field.UUID("team_id", uuid.UUID{}).Optional().Nillable().Comment("Set on a role group owned by a team"),
-		field.Enum("role").GoType(PermittedAction("")).Optional().Nillable().Comment("The one role a team role group grants on its team"),
+		field.UUID("project_id", uuid.UUID{}).Optional().Nillable().Comment("Set on a role group owned by a project"),
+		field.Enum("role").GoType(PermittedAction("")).Optional().Nillable().Comment("The one role a role group grants on its team or project"),
 	}
 }
 
@@ -41,6 +42,7 @@ func (Group) Edges() []ent.Edge {
 		edge.From("users", User.Type).Ref("groups"),
 		edge.To("permissions", Permission.Type),
 		edge.From("team", Team.Type).Ref("role_groups").Field("team_id").Unique(),
+		edge.From("project", Project.Type).Ref("role_groups").Field("project_id").Unique(),
 	}
 }
 
@@ -48,6 +50,7 @@ func (Group) Edges() []ent.Edge {
 func (Group) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("team_id", "role").Unique(),
+		index.Fields("project_id", "role").Unique(),
 	}
 }
 

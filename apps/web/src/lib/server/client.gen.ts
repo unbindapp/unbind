@@ -698,7 +698,8 @@ export const GroupResponseSchema = z
     description: z.string(),
     id: z.string(),
     name: z.string(),
-    role: PermittedActionSchema.optional(), // The role a team role group grants on its team
+    project_id: z.string().optional(), // Set when the group is a role group owned by a project; such groups are managed through the project's members
+    role: PermittedActionSchema.optional(), // The role a role group grants on its team or project
     team_id: z.string().optional(), // Set when the group is a role group owned by a team; such groups are managed through the team's members
   })
   .strip();
@@ -1591,9 +1592,10 @@ export const GetGroupResponseBodySchema = z
 
 export const InvitationPreviewResponseSchema = z
   .object({
-    account_exists: z.boolean(), // True when an account with this email already exists, so accepting only adds it to the team
+    account_exists: z.boolean(), // True when an account with this email already exists, so accepting only adds it to the team or project
     email: z.string(),
     expires_at: z.string().datetime({ offset: true }),
+    project_name: z.string().optional(), // Set when the invitation is to one project of the team
     role: PermittedActionSchema,
     team_name: z.string(),
   })
@@ -2291,6 +2293,7 @@ export const InvitationResponseSchema = z
     expires_at: z.string().datetime({ offset: true }),
     id: z.string(),
     invite_url: z.string().optional(), // The link to share. Only returned when the invitation is created.
+    project_id: z.string().optional(), // Set when the invitation is to one project of the team
     role: PermittedActionSchema,
     team_id: z.string(),
   })
@@ -2299,7 +2302,8 @@ export const InvitationResponseSchema = z
 export const InviteMemberInputSchema = z
   .object({
     email: z.string(),
-    role: PermittedActionSchema, // admin, editor or viewer on this team
+    project_id: z.string().optional(), // Set to invite to this project of the team only
+    role: PermittedActionSchema, // admin, editor or viewer on this team or project
     team_id: z.string(),
   })
   .strip();
@@ -2310,8 +2314,8 @@ export const TeamMemberResponseSchema = z
     email: z.string(),
     group_name: z.string().optional(), // The group the access comes from, when source is group
     id: z.string(),
-    role: PermittedActionSchema, // Strongest role the user holds on the team
-    source: z.enum(['team', 'group']), // team: holds a role on the team and can be managed here. group: reaches the team through another group and is read-only here
+    role: PermittedActionSchema, // Strongest role the user holds on the team or project listed
+    source: z.enum(['team', 'project', 'group']), // team: holds a role on the team. project: holds a role on the project. group: reaches it through another group. A member is managed in the list of what the role is on, so a team member is read-only in a project's list
     updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
@@ -2843,6 +2847,7 @@ export const RevokeGroupPermissionResponseBodySchema = z
 export const RevokeInvitationInputSchema = z
   .object({
     invitation_id: z.string(),
+    project_id: z.string().optional(), // Set when the invitation is to this project of the team
     team_id: z.string(),
   })
   .strip();
@@ -3031,13 +3036,15 @@ export const TeamIconResponseBodySchema = z
 export const TeamMemberAddInputSchema = z
   .object({
     email: z.string(), // Email of an existing account. Accounts are created by instance admins.
-    role: PermittedActionSchema, // admin, editor or viewer on this team
+    project_id: z.string().optional(), // Set to give the role on this project of the team only
+    role: PermittedActionSchema, // admin, editor or viewer on this team or project
     team_id: z.string(),
   })
   .strip();
 
 export const TeamMemberRemoveInputSchema = z
   .object({
+    project_id: z.string().optional(), // Set to remove the role held on this project of the team
     team_id: z.string(),
     user_id: z.string(),
   })
@@ -3051,7 +3058,8 @@ export const TeamMemberResponseBodySchema = z
 
 export const TeamMemberRoleInputSchema = z
   .object({
-    role: PermittedActionSchema, // admin, editor or viewer on this team
+    project_id: z.string().optional(), // Set to change the role held on this project of the team
+    role: PermittedActionSchema, // admin, editor or viewer on this team or project
     team_id: z.string(),
     user_id: z.string(),
   })
@@ -4238,12 +4246,14 @@ export const get_team_iconQuerySchema = z
 export const list_team_invitationsQuerySchema = z
   .object({
     team_id: z.string(),
+    project_id: z.string().optional(), // If present, list the invitations to this project of the team
   })
   .passthrough();
 
 export const list_team_membersQuerySchema = z
   .object({
     team_id: z.string(),
+    project_id: z.string().optional(), // If present, list who can reach this project of the team
   })
   .passthrough();
 
@@ -10294,7 +10304,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
             const validatedQuery = list_team_invitationsQuerySchema.parse(params);
-            const queryKeys = ['team_id'];
+            const queryKeys = ['team_id', 'project_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {
@@ -10428,7 +10438,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
             const validatedQuery = list_team_membersQuerySchema.parse(params);
-            const queryKeys = ['team_id'];
+            const queryKeys = ['team_id', 'project_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {

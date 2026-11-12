@@ -111,7 +111,7 @@ func (suite *MembersSuite) TestListMembersShowsInheritedAccessWithoutOverridingD
 	suite.MockTeamRepo.EXPECT().GetRoleGroups(suite.Ctx, suite.teamID).Return(suite.groups, nil).Once()
 	suite.MockTeamRepo.EXPECT().GetGroupsReachingTeam(suite.Ctx, suite.teamID).Return([]*ent.Group{superusers}, nil).Once()
 
-	members, err := suite.service.ListMembers(suite.Ctx, suite.adminID, suite.teamID)
+	members, err := suite.service.ListMembers(suite.Ctx, suite.adminID, suite.teamID, nil)
 	suite.Require().NoError(err)
 	suite.Require().Len(members, 2)
 
@@ -123,6 +123,78 @@ func (suite *MembersSuite) TestListMembersShowsInheritedAccessWithoutOverridingD
 	suite.Equal(schema.ActionAdmin, members[1].Role)
 	suite.Equal(models.TeamMemberSourceGroup, members[1].Source)
 	suite.Equal("superuser", *members[1].GroupName)
+}
+
+func (suite *MembersSuite) projectWithRoleGroups() (*ent.Project, []*ent.Group) {
+	project := &ent.Project{ID: uuid.New(), Name: "Web", TeamID: suite.teamID}
+	groups := make([]*ent.Group, 0, 3)
+	for _, role := range []schema.PermittedAction{schema.ActionAdmin, schema.ActionEditor, schema.ActionViewer} {
+		groups = append(groups, &ent.Group{ID: uuid.New(), Name: "project-web-" + string(role), ProjectID: &project.ID, Role: new(role)})
+	}
+	return project, groups
+}
+
+func (suite *MembersSuite) expectProjectCheck(action schema.PermittedAction, projectID uuid.UUID) {
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.adminID, []permissions_repo.PermissionCheck{{Action: action, ResourceType: schema.ResourceTypeProject, ResourceID: projectID}}).
+		Return(nil).Once()
+}
+
+func (suite *MembersSuite) TestAddProjectMemberJoinsTheProjectRoleGroupOnly() {
+	project, projectGroups := suite.projectWithRoleGroups()
+	suite.expectProjectCheck(schema.ActionAdmin, project.ID)
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, project.ID).Return(project, nil).Once()
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, "dev@example.com").Return(suite.member, nil).Once()
+	suite.MockTeamRepo.EXPECT().EnsureProjectRoleGroups(suite.Ctx, nil, project).Return(projectGroups, nil).Once()
+	suite.MockGroupRepo.EXPECT().AddUser(suite.Ctx, projectGroups[2].ID, suite.member.ID).Return(nil).Once()
+
+	added, err := suite.service.AddMember(suite.Ctx, suite.adminID, &TeamMemberAddInput{TeamID: suite.teamID, ProjectID: &project.ID, Email: "dev@example.com", Role: schema.ActionViewer})
+	suite.Require().NoError(err)
+	suite.Equal(schema.ActionViewer, added.Role)
+	suite.Equal(models.TeamMemberSourceProject, added.Source)
+}
+
+func (suite *MembersSuite) TestProjectOfAnotherTeamIsNotFound() {
+	project := &ent.Project{ID: uuid.New(), TeamID: uuid.New()}
+	suite.expectProjectCheck(schema.ActionAdmin, project.ID)
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, project.ID).Return(project, nil).Once()
+
+	_, err := suite.service.AddMember(suite.Ctx, suite.adminID, &TeamMemberAddInput{TeamID: suite.teamID, ProjectID: &project.ID, Email: "dev@example.com", Role: schema.ActionViewer})
+	suite.ErrorIs(err, errdefs.ErrNotFound)
+}
+
+func (suite *MembersSuite) TestListProjectMembersShowsTeamMembersAsInherited() {
+	project, projectGroups := suite.projectWithRoleGroups()
+	guest := &ent.User{ID: uuid.New(), Email: "guest@example.com"}
+	projectGroups[0].Edges.Users = []*ent.User{guest, suite.member}
+	teamGrant := func(action schema.PermittedAction) []*ent.Permission {
+		return []*ent.Permission{{Action: action, ResourceType: schema.ResourceTypeTeam, ResourceSelector: schema.ResourceSelector{ID: suite.teamID}}}
+	}
+	owner := &ent.User{ID: uuid.New(), Email: "owner@example.com"}
+	suite.adminGrp.Edges.Users = []*ent.User{owner}
+	suite.adminGrp.Edges.Permissions = teamGrant(schema.ActionAdmin)
+	suite.editorGrp.Edges.Permissions = teamGrant(schema.ActionEditor)
+
+	suite.expectProjectCheck(schema.ActionViewer, project.ID)
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, project.ID).Return(project, nil).Once()
+	suite.MockTeamRepo.EXPECT().GetProjectRoleGroups(suite.Ctx, project.ID).Return(projectGroups, nil).Once()
+	suite.MockTeamRepo.EXPECT().GetGroupsReachingProject(suite.Ctx, suite.teamID, project.ID).Return([]*ent.Group{suite.adminGrp, suite.editorGrp}, nil).Once()
+
+	members, err := suite.service.ListMembers(suite.Ctx, suite.adminID, suite.teamID, &project.ID)
+	suite.Require().NoError(err)
+	suite.Require().Len(members, 3)
+
+	suite.Equal("dev@example.com", members[0].Email)
+	suite.Equal(schema.ActionAdmin, members[0].Role, "the role held on the project is the one listed")
+	suite.Equal(models.TeamMemberSourceProject, members[0].Source)
+
+	suite.Equal("guest@example.com", members[1].Email)
+	suite.Equal(models.TeamMemberSourceProject, members[1].Source)
+
+	suite.Equal("owner@example.com", members[2].Email)
+	suite.Equal(schema.ActionAdmin, members[2].Role)
+	suite.Equal(models.TeamMemberSourceTeam, members[2].Source)
+	suite.Nil(members[2].GroupName)
 }
 
 func TestMembersSuite(t *testing.T) {

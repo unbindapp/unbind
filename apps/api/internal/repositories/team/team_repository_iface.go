@@ -16,11 +16,12 @@ type TeamRepositoryInterface interface {
 	GetIcon(ctx context.Context, teamID uuid.UUID) (*ent.TeamIcon, error)
 	SetIcon(ctx context.Context, teamID uuid.UUID, contentType string, data []byte) error
 	DeleteIcon(ctx context.Context, teamID uuid.UUID) error
-	// CreateInvitation replaces any pending invitation for the same address on the team.
+	// CreateInvitation replaces any pending invitation for the same address on the
+	// same team or project.
 	CreateInvitation(ctx context.Context, input *CreateInvitationInput) (*ent.Invitation, error)
 	GetInvitationByTokenHash(ctx context.Context, tokenHash string) (*ent.Invitation, error)
-	GetPendingInvitations(ctx context.Context, teamID uuid.UUID) ([]*ent.Invitation, error)
-	DeleteInvitation(ctx context.Context, teamID, invitationID uuid.UUID) error
+	GetPendingInvitations(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID) ([]*ent.Invitation, error)
+	DeleteInvitation(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID, invitationID uuid.UUID) error
 	MarkInvitationAccepted(ctx context.Context, invitationID uuid.UUID) error
 	Create(ctx context.Context, tx repository.TxInterface, kubernetesName, name, namespace, kubernetesSecret string, description *string) (*ent.Team, error)
 	Update(ctx context.Context, teamID uuid.UUID, name string, description *string) (*ent.Team, error)
@@ -30,6 +31,7 @@ type TeamRepositoryInterface interface {
 	// EnsureRoleGroups creates the team's admin, editor and viewer groups where they
 	// are missing, each holding exactly that role on the team.
 	EnsureRoleGroups(ctx context.Context, tx repository.TxInterface, team *ent.Team) ([]*ent.Group, error)
+	EnsureProjectRoleGroups(ctx context.Context, tx repository.TxInterface, project *ent.Project) ([]*ent.Group, error)
 	GetAll(ctx context.Context, authPredicate predicate.Team) ([]*ent.Team, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Team, error)
 	GetNamespace(ctx context.Context, id uuid.UUID) (string, error)
@@ -37,8 +39,12 @@ type TeamRepositoryInterface interface {
 	GetNames(ctx context.Context, tx repository.TxInterface) ([]string, error)
 	// GetRoleGroups returns the team's role groups with their members loaded.
 	GetRoleGroups(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error)
+	// Empty until the project gets its first member.
+	GetProjectRoleGroups(ctx context.Context, projectID uuid.UUID) ([]*ent.Group, error)
 	// GetGroupsReachingTeam returns every group that is not one of the team's own
 	// role groups but holds a grant on the team, with members and grants loaded.
 	// Their members reach the team without being on it.
 	GetGroupsReachingTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error)
+	// Includes the role groups of the project's team: its members reach every project.
+	GetGroupsReachingProject(ctx context.Context, teamID, projectID uuid.UUID) ([]*ent.Group, error)
 }

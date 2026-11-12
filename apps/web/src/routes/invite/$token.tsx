@@ -66,6 +66,7 @@ function AcceptForm({
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const needsPassword = !invitation.account_exists;
+  const invitedTo = invitation.project_name ?? invitation.team_name;
 
   const form = useAppForm({
     defaultValues: { password: "" },
@@ -85,7 +86,7 @@ function AcceptForm({
         }
         toast.add({
           type: "success",
-          title: `You joined ${invitation.team_name}`,
+          title: `You joined ${invitedTo}`,
           description: `Sign in with ${invitation.email} to continue.`,
         });
         router.history.push("/sign-in");
@@ -96,7 +97,7 @@ function AcceptForm({
   });
 
   return (
-    <AuthShell subtitle={`You were invited to ${invitation.team_name}`}>
+    <AuthShell subtitle={`You were invited to ${invitedTo}`}>
       <form
         className="mt-5 flex w-full max-w-xs flex-col gap-2"
         onSubmit={(e) => {

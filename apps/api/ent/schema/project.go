@@ -57,6 +57,12 @@ func (Project) Edges() []ent.Edge {
 		edge.To("project_webhooks", Webhook.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},
 		),
+		edge.To("role_groups", Group.Type).Annotations(
+			entsql.Annotation{OnDelete: entsql.Cascade},
+		),
+		edge.To("invitations", Invitation.Type).Annotations(
+			entsql.Annotation{OnDelete: entsql.Cascade},
+		),
 	}
 }
 
