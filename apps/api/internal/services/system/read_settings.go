@@ -22,22 +22,7 @@ type SystemSettingsUpdateInput struct {
 	BuildkitSettings *schema.BuildkitSettings `json:"buildkit_settings" required:"false" doc:"Buildkit settings"`
 }
 
-func (self *SystemService) GetSettings(ctx context.Context, requesterUserID uuid.UUID) (*SystemSettingsResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeSystem,
-		},
-	}
-
-	if err := self.repo.Permissions().Check(
-		ctx,
-		requesterUserID,
-		permissionChecks,
-	); err != nil {
-		return nil, err
-	}
-
+func (self *SystemService) GetSettings(ctx context.Context) (*SystemSettingsResponse, error) {
 	settings, err := self.repo.System().GetSystemSettings(ctx, nil)
 	if err != nil {
 		log.Errorf("Failed to get system settings from DB: %v", err)
