@@ -10,6 +10,8 @@ By default, and by the installer (`apps/installer`), all resources are tied to t
 
 This gives the unbind service account access to all of its resources (as it has superuser permissions to its own namespace)
 
+Buildkit, alloy and node-exporter need privileged pods, so the presync hook on their releases labels the namespace `pod-security.kubernetes.io/enforce: privileged` when it has no level yet. The API does the same at startup, which is how existing installs get it.
+
 ## Bringing your own cluster
 
 **Wild card domain**
