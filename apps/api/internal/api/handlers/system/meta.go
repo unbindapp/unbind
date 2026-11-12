@@ -35,8 +35,7 @@ type SystemMetaResponse struct {
 }
 
 func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *server.BaseAuthInput) (*SystemMetaResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
+	if _, _, err := self.srv.AuthenticatedUser(ctx); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +60,7 @@ func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *serve
 	}
 
 	// Get buildkit settings
-	settings, err := self.srv.SystemService.GetSettings(ctx, user.ID)
+	settings, err := self.srv.SystemService.GetSettings(ctx)
 	if err != nil {
 		log.Error("Error getting buildkit settings", "err", err)
 		return nil, oapi.MapError(err)

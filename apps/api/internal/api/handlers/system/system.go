@@ -20,7 +20,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-system-information",
 		Summary:     "Get System Information",
-		Description: "Get system information such as the external load balancer IP, used for DNS configuration.",
+		Description: "Get system information such as the external load balancer IP, used for DNS configuration. Any signed in user can read it.",
 		Path:        "/get",
 		Method:      http.MethodGet,
 	}, handlers.GetSystemInformation)
