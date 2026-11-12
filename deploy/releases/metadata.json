@@ -578,5 +578,10 @@
     "version": "v0.1.115",
     "summary": "Services can expose TCP and UDP on the same port number.",
     "breaking": false
+  },
+  "v0.1.116": {
+    "version": "v0.1.116",
+    "summary": "Invite people to a single project with their own role, a Members page in project settings, and volume metrics for project members and API keys limited to a project.",
+    "breaking": false
   }
 }
