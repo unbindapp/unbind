@@ -11,6 +11,7 @@ import (
 type InvitationResponse struct {
 	ID        uuid.UUID              `json:"id" format:"uuid"`
 	TeamID    uuid.UUID              `json:"team_id" format:"uuid"`
+	ProjectID *uuid.UUID             `json:"project_id,omitempty" format:"uuid" doc:"Set when the invitation is to one project of the team"`
 	Email     string                 `json:"email"`
 	Role      schema.PermittedAction `json:"role"`
 	ExpiresAt time.Time              `json:"expires_at"`
@@ -23,6 +24,7 @@ func TransformInvitationEntity(entity *ent.Invitation) *InvitationResponse {
 	return &InvitationResponse{
 		ID:        entity.ID,
 		TeamID:    entity.TeamID,
+		ProjectID: entity.ProjectID,
 		Email:     entity.Email,
 		Role:      entity.Role,
 		ExpiresAt: entity.ExpiresAt,
@@ -49,7 +51,8 @@ type InviteMemberResponse struct {
 type InvitationPreviewResponse struct {
 	Email         string                 `json:"email"`
 	TeamName      string                 `json:"team_name"`
+	ProjectName   *string                `json:"project_name,omitempty" doc:"Set when the invitation is to one project of the team"`
 	Role          schema.PermittedAction `json:"role"`
 	ExpiresAt     time.Time              `json:"expires_at"`
-	AccountExists bool                   `json:"account_exists" doc:"True when an account with this email already exists, so accepting only adds it to the team"`
+	AccountExists bool                   `json:"account_exists" doc:"True when an account with this email already exists, so accepting only adds it to the team or project"`
 }

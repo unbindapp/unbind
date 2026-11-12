@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/invitation"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -99,6 +100,20 @@ func (_c *InvitationCreate) SetTeamID(v uuid.UUID) *InvitationCreate {
 	return _c
 }
 
+// SetProjectID sets the "project_id" field.
+func (_c *InvitationCreate) SetProjectID(v uuid.UUID) *InvitationCreate {
+	_c.mutation.SetProjectID(v)
+	return _c
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_c *InvitationCreate) SetNillableProjectID(v *uuid.UUID) *InvitationCreate {
+	if v != nil {
+		_c.SetProjectID(*v)
+	}
+	return _c
+}
+
 // SetInvitedBy sets the "invited_by" field.
 func (_c *InvitationCreate) SetInvitedBy(v uuid.UUID) *InvitationCreate {
 	_c.mutation.SetInvitedBy(v)
@@ -130,6 +145,11 @@ func (_c *InvitationCreate) SetNillableID(v *uuid.UUID) *InvitationCreate {
 // SetTeam sets the "team" edge to the Team entity.
 func (_c *InvitationCreate) SetTeam(v *Team) *InvitationCreate {
 	return _c.SetTeamID(v.ID)
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (_c *InvitationCreate) SetProject(v *Project) *InvitationCreate {
+	return _c.SetProjectID(v.ID)
 }
 
 // SetInviterID sets the "inviter" edge to the User entity by ID.
@@ -317,6 +337,23 @@ func (_c *InvitationCreate) createSpec() (*Invitation, *sqlgraph.CreateSpec) {
 		_node.TeamID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   invitation.ProjectTable,
+			Columns: []string{invitation.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ProjectID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.InviterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -473,6 +510,24 @@ func (u *InvitationUpsert) SetTeamID(v uuid.UUID) *InvitationUpsert {
 // UpdateTeamID sets the "team_id" field to the value that was provided on create.
 func (u *InvitationUpsert) UpdateTeamID() *InvitationUpsert {
 	u.SetExcluded(invitation.FieldTeamID)
+	return u
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *InvitationUpsert) SetProjectID(v uuid.UUID) *InvitationUpsert {
+	u.Set(invitation.FieldProjectID, v)
+	return u
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *InvitationUpsert) UpdateProjectID() *InvitationUpsert {
+	u.SetExcluded(invitation.FieldProjectID)
+	return u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *InvitationUpsert) ClearProjectID() *InvitationUpsert {
+	u.SetNull(invitation.FieldProjectID)
 	return u
 }
 
@@ -647,6 +702,27 @@ func (u *InvitationUpsertOne) SetTeamID(v uuid.UUID) *InvitationUpsertOne {
 func (u *InvitationUpsertOne) UpdateTeamID() *InvitationUpsertOne {
 	return u.Update(func(s *InvitationUpsert) {
 		s.UpdateTeamID()
+	})
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *InvitationUpsertOne) SetProjectID(v uuid.UUID) *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetProjectID(v)
+	})
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *InvitationUpsertOne) UpdateProjectID() *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *InvitationUpsertOne) ClearProjectID() *InvitationUpsertOne {
+	return u.Update(func(s *InvitationUpsert) {
+		s.ClearProjectID()
 	})
 }
 
@@ -991,6 +1067,27 @@ func (u *InvitationUpsertBulk) SetTeamID(v uuid.UUID) *InvitationUpsertBulk {
 func (u *InvitationUpsertBulk) UpdateTeamID() *InvitationUpsertBulk {
 	return u.Update(func(s *InvitationUpsert) {
 		s.UpdateTeamID()
+	})
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *InvitationUpsertBulk) SetProjectID(v uuid.UUID) *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.SetProjectID(v)
+	})
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *InvitationUpsertBulk) UpdateProjectID() *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *InvitationUpsertBulk) ClearProjectID() *InvitationUpsertBulk {
+	return u.Update(func(s *InvitationUpsert) {
+		s.ClearProjectID()
 	})
 }
 

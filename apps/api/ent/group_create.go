@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/permission"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -104,6 +105,20 @@ func (_c *GroupCreate) SetNillableTeamID(v *uuid.UUID) *GroupCreate {
 	return _c
 }
 
+// SetProjectID sets the "project_id" field.
+func (_c *GroupCreate) SetProjectID(v uuid.UUID) *GroupCreate {
+	_c.mutation.SetProjectID(v)
+	return _c
+}
+
+// SetNillableProjectID sets the "project_id" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableProjectID(v *uuid.UUID) *GroupCreate {
+	if v != nil {
+		_c.SetProjectID(*v)
+	}
+	return _c
+}
+
 // SetRole sets the "role" field.
 func (_c *GroupCreate) SetRole(v schema.PermittedAction) *GroupCreate {
 	_c.mutation.SetRole(v)
@@ -165,6 +180,11 @@ func (_c *GroupCreate) AddPermissions(v ...*Permission) *GroupCreate {
 // SetTeam sets the "team" edge to the Team entity.
 func (_c *GroupCreate) SetTeam(v *Team) *GroupCreate {
 	return _c.SetTeamID(v.ID)
+}
+
+// SetProject sets the "project" edge to the Project entity.
+func (_c *GroupCreate) SetProject(v *Project) *GroupCreate {
+	return _c.SetProjectID(v.ID)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -346,6 +366,23 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		_node.TeamID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.ProjectTable,
+			Columns: []string{group.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ProjectID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -473,6 +510,24 @@ func (u *GroupUpsert) UpdateTeamID() *GroupUpsert {
 // ClearTeamID clears the value of the "team_id" field.
 func (u *GroupUpsert) ClearTeamID() *GroupUpsert {
 	u.SetNull(group.FieldTeamID)
+	return u
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *GroupUpsert) SetProjectID(v uuid.UUID) *GroupUpsert {
+	u.Set(group.FieldProjectID, v)
+	return u
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateProjectID() *GroupUpsert {
+	u.SetExcluded(group.FieldProjectID)
+	return u
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *GroupUpsert) ClearProjectID() *GroupUpsert {
+	u.SetNull(group.FieldProjectID)
 	return u
 }
 
@@ -633,6 +688,27 @@ func (u *GroupUpsertOne) UpdateTeamID() *GroupUpsertOne {
 func (u *GroupUpsertOne) ClearTeamID() *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearTeamID()
+	})
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *GroupUpsertOne) SetProjectID(v uuid.UUID) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetProjectID(v)
+	})
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateProjectID() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *GroupUpsertOne) ClearProjectID() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearProjectID()
 	})
 }
 
@@ -963,6 +1039,27 @@ func (u *GroupUpsertBulk) UpdateTeamID() *GroupUpsertBulk {
 func (u *GroupUpsertBulk) ClearTeamID() *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearTeamID()
+	})
+}
+
+// SetProjectID sets the "project_id" field.
+func (u *GroupUpsertBulk) SetProjectID(v uuid.UUID) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetProjectID(v)
+	})
+}
+
+// UpdateProjectID sets the "project_id" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateProjectID() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateProjectID()
+	})
+}
+
+// ClearProjectID clears the value of the "project_id" field.
+func (u *GroupUpsertBulk) ClearProjectID() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearProjectID()
 	})
 }
 

@@ -144,6 +144,50 @@ func (suite *InvitationsSuite) TestAcceptRefusesSpentExpiredOrUnknownTokens() {
 	}
 }
 
+func (suite *InvitationsSuite) TestProjectInvitationNamesTheProjectAndJoinsItsRoleGroup() {
+	project := &ent.Project{ID: uuid.New(), Name: "Web", TeamID: suite.team.ID}
+	projectGroups := make([]*ent.Group, 0, 3)
+	for _, role := range []schema.PermittedAction{schema.ActionAdmin, schema.ActionEditor, schema.ActionViewer} {
+		projectGroups = append(projectGroups, &ent.Group{ID: uuid.New(), ProjectID: &project.ID, Role: new(role)})
+	}
+	suite.mailer.configured = true
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.adminID, []permissions_repo.PermissionCheck{{Action: schema.ActionAdmin, ResourceType: schema.ResourceTypeProject, ResourceID: project.ID}}).
+		Return(nil).Once()
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, project.ID).Return(project, nil).Once()
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.team.ID).Return(suite.team, nil).Once()
+	suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.adminID).Return(&ent.User{ID: suite.adminID, Email: "admin@example.com"}, nil).Once()
+	suite.MockUserRepo.EXPECT().GetByEmail(suite.Ctx, "new@example.com").Return(nil, &ent.NotFoundError{}).Twice()
+
+	var stored *ent.Invitation
+	suite.MockTeamRepo.EXPECT().CreateInvitation(suite.Ctx, mock.Anything).
+		RunAndReturn(func(_ context.Context, in *team_repo.CreateInvitationInput) (*ent.Invitation, error) {
+			stored = &ent.Invitation{ID: uuid.New(), TeamID: in.TeamID, ProjectID: in.ProjectID, Email: in.Email, Role: in.Role, ExpiresAt: in.ExpiresAt}
+			return stored, nil
+		}).Once()
+
+	result, err := suite.service.InviteMember(suite.Ctx, suite.adminID, &InviteMemberInput{TeamID: suite.team.ID, ProjectID: &project.ID, Email: "new@example.com", Role: schema.ActionEditor})
+	suite.Require().NoError(err)
+	suite.Equal(project.ID, *result.Invitation.ProjectID)
+	suite.Require().Len(suite.mailer.sent, 1)
+	suite.Equal("Join Web", suite.mailer.sent[0].Heading)
+	suite.Contains(suite.mailer.sent[0].Paragraphs[0], "the project Web in the team Acme as editor")
+
+	token := strings.TrimPrefix(result.Invitation.InviteURL, "https://unbind.example/invite/")
+	stored.Edges.Team = suite.team
+	stored.Edges.Project = project
+	created := &ent.User{ID: uuid.New(), Email: "new@example.com"}
+	suite.MockTeamRepo.EXPECT().GetInvitationByTokenHash(suite.Ctx, hashInvitationToken(token)).Return(stored, nil).Once()
+	suite.MockUserRepo.EXPECT().Create(suite.Ctx, "new@example.com", "correct horse").Return(created, nil).Once()
+	suite.MockTeamRepo.EXPECT().EnsureProjectRoleGroups(suite.Ctx, nil, project).Return(projectGroups, nil).Once()
+	suite.MockGroupRepo.EXPECT().AddUser(suite.Ctx, projectGroups[1].ID, created.ID).Return(nil).Once()
+	suite.MockTeamRepo.EXPECT().MarkInvitationAccepted(suite.Ctx, stored.ID).Return(nil).Once()
+
+	user, err := suite.service.AcceptInvitation(suite.Ctx, &AcceptInvitationInput{Token: token, Password: "correct horse"})
+	suite.Require().NoError(err)
+	suite.Equal(created.ID, user.ID)
+}
+
 func TestInvitationsSuite(t *testing.T) {
 	suite.Run(t, new(InvitationsSuite))
 }

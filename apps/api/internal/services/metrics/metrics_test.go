@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 	"github.com/unbindapp/unbind-api/internal/models"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 func TestPermissionCheckForType(t *testing.T) {
@@ -85,4 +86,21 @@ func TestMetricsByServerName(t *testing.T) {
 	assert.Contains(t, result, "odd", "an instance without a port falls back to the whole label")
 	assert.NotContains(t, result, "10.0.0.9", "instances of unknown servers are dropped")
 	assert.Len(t, result, 3)
+}
+
+func TestVolumeViewChecksCoverEveryLevelTheVolumeBelongsTo(t *testing.T) {
+	teamID, projectID, environmentID := uuid.New(), uuid.New(), uuid.New()
+	viewer := func(resourceType schema.ResourceType, id uuid.UUID) permissions_repo.PermissionCheck {
+		return permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: resourceType, ResourceID: id}
+	}
+
+	teamVolume := volumeViewChecks(&models.PVCInfo{TeamID: teamID})
+	assert.Equal(t, []permissions_repo.PermissionCheck{viewer(schema.ResourceTypeTeam, teamID)}, teamVolume)
+
+	environmentVolume := volumeViewChecks(&models.PVCInfo{TeamID: teamID, ProjectID: &projectID, EnvironmentID: &environmentID})
+	assert.Equal(t, []permissions_repo.PermissionCheck{
+		viewer(schema.ResourceTypeTeam, teamID),
+		viewer(schema.ResourceTypeProject, projectID),
+		viewer(schema.ResourceTypeEnvironment, environmentID),
+	}, environmentVolume)
 }

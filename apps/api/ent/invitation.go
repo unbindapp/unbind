@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/invitation"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -38,6 +39,8 @@ type Invitation struct {
 	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
 	// TeamID holds the value of the "team_id" field.
 	TeamID uuid.UUID `json:"team_id,omitempty"`
+	// ProjectID holds the value of the "project_id" field.
+	ProjectID *uuid.UUID `json:"project_id,omitempty"`
 	// InvitedBy holds the value of the "invited_by" field.
 	InvitedBy *uuid.UUID `json:"invited_by,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -50,11 +53,13 @@ type Invitation struct {
 type InvitationEdges struct {
 	// Team holds the value of the team edge.
 	Team *Team `json:"team,omitempty"`
+	// Project holds the value of the project edge.
+	Project *Project `json:"project,omitempty"`
 	// Inviter holds the value of the inviter edge.
 	Inviter *User `json:"inviter,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TeamOrErr returns the Team value or an error if the edge
@@ -68,12 +73,23 @@ func (e InvitationEdges) TeamOrErr() (*Team, error) {
 	return nil, &NotLoadedError{edge: "team"}
 }
 
+// ProjectOrErr returns the Project value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvitationEdges) ProjectOrErr() (*Project, error) {
+	if e.Project != nil {
+		return e.Project, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: project.Label}
+	}
+	return nil, &NotLoadedError{edge: "project"}
+}
+
 // InviterOrErr returns the Inviter value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e InvitationEdges) InviterOrErr() (*User, error) {
 	if e.Inviter != nil {
 		return e.Inviter, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "inviter"}
@@ -84,7 +100,7 @@ func (*Invitation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case invitation.FieldInvitedBy:
+		case invitation.FieldProjectID, invitation.FieldInvitedBy:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case invitation.FieldEmail, invitation.FieldTokenHash, invitation.FieldRole:
 			values[i] = new(sql.NullString)
@@ -162,6 +178,13 @@ func (_m *Invitation) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.TeamID = *value
 			}
+		case invitation.FieldProjectID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field project_id", values[i])
+			} else if value.Valid {
+				_m.ProjectID = new(uuid.UUID)
+				*_m.ProjectID = *value.S.(*uuid.UUID)
+			}
 		case invitation.FieldInvitedBy:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field invited_by", values[i])
@@ -185,6 +208,11 @@ func (_m *Invitation) Value(name string) (ent.Value, error) {
 // QueryTeam queries the "team" edge of the Invitation entity.
 func (_m *Invitation) QueryTeam() *TeamQuery {
 	return NewInvitationClient(_m.config).QueryTeam(_m)
+}
+
+// QueryProject queries the "project" edge of the Invitation entity.
+func (_m *Invitation) QueryProject() *ProjectQuery {
+	return NewInvitationClient(_m.config).QueryProject(_m)
 }
 
 // QueryInviter queries the "inviter" edge of the Invitation entity.
@@ -239,6 +267,11 @@ func (_m *Invitation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))
+	builder.WriteString(", ")
+	if v := _m.ProjectID; v != nil {
+		builder.WriteString("project_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.InvitedBy; v != nil {
 		builder.WriteString("invited_by=")

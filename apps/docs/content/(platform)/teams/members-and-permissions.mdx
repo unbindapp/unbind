@@ -42,9 +42,26 @@ Instance owners can also create accounts without an invitation, from the server 
 
 Use the menu on a member's row. Removing someone takes away the role they had on this team and nothing else. Their account, their other teams and their API keys stay as they are.
 
+## Project members
+
+To give someone one project and nothing else in the team, add them to the project instead of the team. **Project** > **Settings** > **Members** works like the team's page: press **Invite**, enter an email address and pick a role. Project admins manage it, and so do team admins.
+
+A project member:
+
+- sees the team with that one project in it. Other projects, team members, team variables, team volumes and S3 storage stay hidden.
+- does in the project what their role allows: an editor deploys and changes services, an admin also deletes and invites others to the project.
+- can create [API keys](/api/authentication) and approve [connected apps](/api/connected-apps), including for MCP. They reach that project only.
+- cannot create projects in the team.
+
+The page lists everyone who can open the project. Team members are on it too, marked as coming from the team, because a role on the team covers all of its projects. Change those on the team's page.
+
+Someone can be on a team and on one of its projects at once. The stronger role applies in that project. A viewer on the team who is an admin on one project is an admin there and a viewer everywhere else.
+
+Invitations to a project are listed on the project's page, not the team's. Deleting a project removes its members and pending invitations.
+
 ## Groups
 
-Under the hood a role on a team is a group with that one permission, and every team has an admin, editor and viewer group. These groups are managed from the members page and cannot be renamed, deleted or changed through the group endpoints. Instance owners can still make groups of their own for finer grants, such as an editor on one service.
+Under the hood a role on a team is a group with that one permission, and every team has an admin, editor and viewer group. A project gets the same three groups when its first member is added. These groups are managed from the members pages and cannot be renamed, deleted or changed through the group endpoints. Instance owners can still make groups of their own for finer grants, such as an editor on one service.
 
 ## Roles for API keys and apps
 

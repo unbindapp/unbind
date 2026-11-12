@@ -33,10 +33,14 @@ const (
 	FieldAcceptedAt = "accepted_at"
 	// FieldTeamID holds the string denoting the team_id field in the database.
 	FieldTeamID = "team_id"
+	// FieldProjectID holds the string denoting the project_id field in the database.
+	FieldProjectID = "project_id"
 	// FieldInvitedBy holds the string denoting the invited_by field in the database.
 	FieldInvitedBy = "invited_by"
 	// EdgeTeam holds the string denoting the team edge name in mutations.
 	EdgeTeam = "team"
+	// EdgeProject holds the string denoting the project edge name in mutations.
+	EdgeProject = "project"
 	// EdgeInviter holds the string denoting the inviter edge name in mutations.
 	EdgeInviter = "inviter"
 	// Table holds the table name of the invitation in the database.
@@ -48,6 +52,13 @@ const (
 	TeamInverseTable = "teams"
 	// TeamColumn is the table column denoting the team relation/edge.
 	TeamColumn = "team_id"
+	// ProjectTable is the table that holds the project relation/edge.
+	ProjectTable = "invitations"
+	// ProjectInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectInverseTable = "projects"
+	// ProjectColumn is the table column denoting the project relation/edge.
+	ProjectColumn = "project_id"
 	// InviterTable is the table that holds the inviter relation/edge.
 	InviterTable = "invitations"
 	// InviterInverseTable is the table name for the User entity.
@@ -68,6 +79,7 @@ var Columns = []string{
 	FieldExpiresAt,
 	FieldAcceptedAt,
 	FieldTeamID,
+	FieldProjectID,
 	FieldInvitedBy,
 }
 
@@ -152,6 +164,11 @@ func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
 }
 
+// ByProjectID orders the results by the project_id field.
+func ByProjectID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProjectID, opts...).ToFunc()
+}
+
 // ByInvitedBy orders the results by the invited_by field.
 func ByInvitedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInvitedBy, opts...).ToFunc()
@@ -161,6 +178,13 @@ func ByInvitedBy(opts ...sql.OrderTermOption) OrderOption {
 func ByTeamField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTeamStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByProjectField orders the results by project field.
+func ByProjectField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -175,6 +199,13 @@ func newTeamStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
+	)
+}
+func newProjectStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
 	)
 }
 func newInviterStep() *sqlgraph.Step {

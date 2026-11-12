@@ -8,7 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/environment"
+	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/project"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
@@ -138,5 +140,24 @@ func (self *ProjectRepository) Delete(ctx context.Context, tx repository.TxInter
 	if tx != nil {
 		db = tx.Client()
 	}
+
+	grants, err := db.Permission.Query().
+		Where(permission.ResourceTypeEQ(schema.ResourceTypeProject)).
+		All(ctx)
+	if err != nil {
+		return err
+	}
+	var stale []uuid.UUID
+	for _, grant := range grants {
+		if grant.ResourceSelector.ID == projectID {
+			stale = append(stale, grant.ID)
+		}
+	}
+	if len(stale) > 0 {
+		if _, err := db.Permission.Delete().Where(permission.IDIn(stale...)).Exec(ctx); err != nil {
+			return err
+		}
+	}
+
 	return db.Project.DeleteOneID(projectID).Exec(ctx)
 }

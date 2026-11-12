@@ -97,7 +97,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-team-members",
 		Summary:     "List Team Members",
-		Description: "List who can reach the team: members with a role on it, and users who reach it through another group.",
+		Description: "List who can reach the team: members with a role on it, and users who reach it through another group. With project_id, list who can reach that project instead: its own members, the team's members and other groups.",
 		Path:        "/members",
 		Method:      http.MethodGet,
 	}, handlers.ListTeamMembers, oapi.SessionOnly)
@@ -105,7 +105,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "add-team-member",
 		Summary:     "Add Team Member",
-		Description: "Give an existing account a role on the team. Requires team admin.",
+		Description: "Give an existing account a role on the team, or on one project of it with project_id. Requires admin on the team or that project.",
 		Path:        "/members/add",
 		Method:      http.MethodPost,
 	}, handlers.AddTeamMember, oapi.SessionOnly)
@@ -113,7 +113,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-team-member",
 		Summary:     "Update Team Member",
-		Description: "Change a member's role on the team. Requires team admin.",
+		Description: "Change a member's role on the team, or on one project of it with project_id. Requires admin on the team or that project.",
 		Path:        "/members/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdateTeamMember, oapi.SessionOnly)
@@ -121,7 +121,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "remove-team-member",
 		Summary:     "Remove Team Member",
-		Description: "Remove a member from the team. Requires team admin, or the member leaving on their own.",
+		Description: "Remove a member from the team, or from one project of it with project_id. Requires admin on the team or that project, or the member leaving on their own.",
 		Path:        "/members/remove",
 		Method:      http.MethodDelete,
 	}, handlers.RemoveTeamMember, oapi.SessionOnly)
@@ -129,7 +129,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "invite-team-member",
 		Summary:     "Invite Team Member",
-		Description: "Invite an email address to the team. An existing account is added at once; a new one gets an invitation link, emailed when a mail relay is configured. Requires team admin.",
+		Description: "Invite an email address to the team, or to one project of it with project_id. An existing account is added at once; a new one gets an invitation link, emailed when a mail relay is configured. Requires admin on the team or that project.",
 		Path:        "/members/invite",
 		Method:      http.MethodPost,
 	}, handlers.InviteTeamMember, oapi.SessionOnly)
@@ -137,7 +137,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-team-invitations",
 		Summary:     "List Team Invitations",
-		Description: "List pending invitations to the team. Requires team admin.",
+		Description: "List pending invitations to the team, or to one project of it with project_id. Requires admin on the team or that project.",
 		Path:        "/invitations",
 		Method:      http.MethodGet,
 	}, handlers.ListTeamInvitations, oapi.SessionOnly)
@@ -145,7 +145,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "revoke-team-invitation",
 		Summary:     "Revoke Team Invitation",
-		Description: "Revoke a pending invitation so its link stops working. Requires team admin.",
+		Description: "Revoke a pending invitation so its link stops working. Requires admin on the team, or on the project the invitation is to.",
 		Path:        "/invitations/revoke",
 		Method:      http.MethodDelete,
 	}, handlers.RevokeTeamInvitation, oapi.SessionOnly)

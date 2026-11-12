@@ -49,13 +49,41 @@ func (suite *InvitationsSuite) TestReinviteReplacesPendingAndListSkipsSpentOrExp
 	suite.True(ent.IsNotFound(err), "the first invitation was replaced")
 	_ = first
 
-	pending, err := suite.teamRepo.GetPendingInvitations(suite.Ctx, suite.team.ID)
+	pending, err := suite.teamRepo.GetPendingInvitations(suite.Ctx, suite.team.ID, nil)
 	suite.Require().NoError(err)
 	suite.Require().Len(pending, 1)
 	suite.Equal(second.ID, pending[0].ID)
 
-	suite.Require().NoError(suite.teamRepo.DeleteInvitation(suite.Ctx, suite.team.ID, second.ID))
-	suite.True(ent.IsNotFound(suite.teamRepo.DeleteInvitation(suite.Ctx, uuid.New(), accepted.ID)), "another team cannot revoke it")
+	suite.Require().NoError(suite.teamRepo.DeleteInvitation(suite.Ctx, suite.team.ID, nil, second.ID))
+	suite.True(ent.IsNotFound(suite.teamRepo.DeleteInvitation(suite.Ctx, uuid.New(), nil, accepted.ID)), "another team cannot revoke it")
+}
+
+func (suite *InvitationsSuite) TestProjectInvitationsStayApartFromTheTeams() {
+	project := suite.DB.Project.Create().SetTeamID(suite.team.ID).SetKubernetesName("web-abc").SetName("Web").SetKubernetesSecret("web-abc").SaveX(suite.Ctx)
+	later := time.Now().Add(time.Hour)
+	toTeam := suite.invite("dev@example.com", "h1", later)
+	toProject, err := suite.teamRepo.CreateInvitation(suite.Ctx, &CreateInvitationInput{
+		TeamID: suite.team.ID, ProjectID: &project.ID, Email: "dev@example.com", Role: schema.ActionEditor, TokenHash: "h2", ExpiresAt: later, InvitedBy: suite.inviter.ID,
+	})
+	suite.Require().NoError(err)
+
+	teamPending, err := suite.teamRepo.GetPendingInvitations(suite.Ctx, suite.team.ID, nil)
+	suite.Require().NoError(err)
+	suite.Require().Len(teamPending, 1)
+	suite.Equal(toTeam.ID, teamPending[0].ID)
+
+	projectPending, err := suite.teamRepo.GetPendingInvitations(suite.Ctx, suite.team.ID, &project.ID)
+	suite.Require().NoError(err)
+	suite.Require().Len(projectPending, 1)
+	suite.Equal(toProject.ID, projectPending[0].ID)
+
+	loaded, err := suite.teamRepo.GetInvitationByTokenHash(suite.Ctx, "h2")
+	suite.Require().NoError(err)
+	suite.Equal(project.ID, loaded.Edges.Project.ID)
+
+	suite.True(ent.IsNotFound(suite.teamRepo.DeleteInvitation(suite.Ctx, suite.team.ID, nil, toProject.ID)), "a team revoke cannot reach a project invitation")
+	suite.True(ent.IsNotFound(suite.teamRepo.DeleteInvitation(suite.Ctx, suite.team.ID, &project.ID, toTeam.ID)), "a project revoke cannot reach a team invitation")
+	suite.Require().NoError(suite.teamRepo.DeleteInvitation(suite.Ctx, suite.team.ID, &project.ID, toProject.ID))
 }
 
 func TestInvitationsSuite(t *testing.T) {

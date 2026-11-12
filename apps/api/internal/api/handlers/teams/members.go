@@ -12,7 +12,8 @@ import (
 
 type ListTeamMembersInput struct {
 	server.BaseAuthInput
-	TeamID uuid.UUID `query:"team_id" format:"uuid" required:"true"`
+	TeamID    uuid.UUID `query:"team_id" format:"uuid" required:"true"`
+	ProjectID uuid.UUID `query:"project_id" format:"uuid" required:"false" doc:"If present, list who can reach this project of the team"`
 }
 
 type ListTeamMembersResponse struct {
@@ -27,7 +28,7 @@ func (self *HandlerGroup) ListTeamMembers(ctx context.Context, input *ListTeamMe
 		return nil, err
 	}
 
-	members, err := self.srv.TeamService.ListMembers(ctx, user.ID, input.TeamID)
+	members, err := self.srv.TeamService.ListMembers(ctx, user.ID, input.TeamID, optionalID(input.ProjectID))
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -109,4 +110,11 @@ func (self *HandlerGroup) RemoveTeamMember(ctx context.Context, input *RemoveTea
 	resp := &RemoveTeamMemberResponse{}
 	resp.Body.Data = server.SuccessResponse{Success: true}
 	return resp, nil
+}
+
+func optionalID(id uuid.UUID) *uuid.UUID {
+	if id == uuid.Nil {
+		return nil
+	}
+	return &id
 }

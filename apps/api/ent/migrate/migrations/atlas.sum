@@ -1,4 +1,4 @@
-h1:88VzW9ZeM7lzJqTeQHU/guLgBxH0RumkS9nGuIjLrO8=
+h1:/QqXYC+9aJAFpCLHal37DdzuuX8oHGgs5NmhinoP86s=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -48,3 +48,4 @@ h1:88VzW9ZeM7lzJqTeQHU/guLgBxH0RumkS9nGuIjLrO8=
 20261017090000_github_app_teams.sql h1:j9IBUD7IDXXorzPAkPqIFuTZ12I9EvrlW3LbXxHUaAY=
 20261017152745_network_exceptions.sql h1:8DxllTMyEDZbGzocCwxCkbIyOK7dpxAYdxX07zcqNiQ=
 20261017170311_positions.sql h1:Av2PRLP5ffvK4zE9hDQSkGZH62pqqBafNDUZcd9t96U=
+20261112010707_project_members.sql h1:nw4TNm4h+y1TaPXV0pD8vKf3VQDXC0vOW8/CehHVZaw=

@@ -41,8 +41,8 @@ func (self *BootstrapRepository) CreateUser(ctx context.Context, email, password
 			return err
 		}
 
-		// The first user joins every instance-level group, never a team's role groups
-		groups, err := tx.Client().Group.Query().Where(group.TeamIDIsNil()).All(ctx)
+		// The first user joins every instance-level group, never a team's or project's role groups
+		groups, err := tx.Client().Group.Query().Where(group.TeamIDIsNil(), group.ProjectIDIsNil()).All(ctx)
 		if err != nil {
 			log.Errorf("Error querying groups: %v\n", err)
 			return err

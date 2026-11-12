@@ -1,4 +1,4 @@
-// Package invitations_handler serves the public side of team invitations: the
+// Package invitations_handler serves the public side of invitations: the
 // invitee holds a token and nothing else, so these routes take no session.
 package invitations_handler
 
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "accept-invitation",
 		Summary:     "Accept Invitation",
-		Description: "Accept an invitation. Creates the account when the invited email has none, then adds it to the team.",
+		Description: "Accept an invitation. Creates the account when the invited email has none, then adds it to the team or project it was invited to.",
 		Path:        "/accept",
 		Method:      http.MethodPost,
 	}, handlers.AcceptInvitation, oapi.Public)

@@ -2,6 +2,7 @@ package team_repo
 
 import (
 	"context"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -81,18 +82,50 @@ func (self *TeamRepository) GetRoleGroups(ctx context.Context, teamID uuid.UUID)
 		All(ctx)
 }
 
+// Empty until the project gets its first member.
+func (self *TeamRepository) GetProjectRoleGroups(ctx context.Context, projectID uuid.UUID) ([]*ent.Group, error) {
+	return self.base.DB.Group.Query().
+		Where(group.ProjectID(projectID)).
+		WithUsers().
+		All(ctx)
+}
+
+type MemberScope struct {
+	TeamID    uuid.UUID
+	ProjectID *uuid.UUID
+}
+
+func (self MemberScope) ReachedBy(grant *ent.Permission) bool {
+	switch grant.ResourceType {
+	case schema.ResourceTypeTeam:
+		return grant.ResourceSelector.Superuser || grant.ResourceSelector.ID == self.TeamID
+	case schema.ResourceTypeProject:
+		return self.ProjectID != nil && (grant.ResourceSelector.Superuser || grant.ResourceSelector.ID == *self.ProjectID)
+	default:
+		return false
+	}
+}
+
 // GetGroupsReachingTeam returns every group that is not one of the team's own
 // role groups but holds a grant on the team, with members and grants loaded.
 // Their members reach the team without being on it.
 func (self *TeamRepository) GetGroupsReachingTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error) {
+	return self.groupsReaching(ctx, MemberScope{TeamID: teamID}, group.Or(group.TeamIDIsNil(), group.TeamIDNEQ(teamID)))
+}
+
+// Includes the role groups of the project's team: its members reach every project.
+func (self *TeamRepository) GetGroupsReachingProject(ctx context.Context, teamID, projectID uuid.UUID) ([]*ent.Group, error) {
+	scope := MemberScope{TeamID: teamID, ProjectID: &projectID}
+	return self.groupsReaching(ctx, scope, group.Or(group.ProjectIDIsNil(), group.ProjectIDNEQ(projectID)))
+}
+
+func (self *TeamRepository) groupsReaching(ctx context.Context, scope MemberScope, notOwnRoleGroup predicate.Group) ([]*ent.Group, error) {
+	grantTypes := permission.ResourceTypeIn(schema.ResourceTypeTeam, schema.ResourceTypeProject)
 	groups, err := self.base.DB.Group.Query().
-		Where(
-			group.Or(group.TeamIDIsNil(), group.TeamIDNEQ(teamID)),
-			group.HasPermissionsWith(permission.ResourceTypeEQ(schema.ResourceTypeTeam)),
-		).
+		Where(notOwnRoleGroup, group.HasPermissionsWith(grantTypes)).
 		WithUsers().
 		WithPermissions(func(q *ent.PermissionQuery) {
-			q.Where(permission.ResourceTypeEQ(schema.ResourceTypeTeam))
+			q.Where(grantTypes)
 		}).
 		All(ctx)
 	if err != nil {
@@ -101,11 +134,8 @@ func (self *TeamRepository) GetGroupsReachingTeam(ctx context.Context, teamID uu
 
 	var reaching []*ent.Group
 	for _, g := range groups {
-		for _, p := range g.Edges.Permissions {
-			if p.ResourceSelector.Superuser || p.ResourceSelector.ID == teamID {
-				reaching = append(reaching, g)
-				break
-			}
+		if slices.ContainsFunc(g.Edges.Permissions, scope.ReachedBy) {
+			reaching = append(reaching, g)
 		}
 	}
 	return reaching, nil

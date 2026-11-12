@@ -92,6 +92,11 @@ func TeamID(v uuid.UUID) predicate.Invitation {
 	return predicate.Invitation(sql.FieldEQ(FieldTeamID, v))
 }
 
+// ProjectID applies equality check predicate on the "project_id" field. It's identical to ProjectIDEQ.
+func ProjectID(v uuid.UUID) predicate.Invitation {
+	return predicate.Invitation(sql.FieldEQ(FieldProjectID, v))
+}
+
 // InvitedBy applies equality check predicate on the "invited_by" field. It's identical to InvitedByEQ.
 func InvitedBy(v uuid.UUID) predicate.Invitation {
 	return predicate.Invitation(sql.FieldEQ(FieldInvitedBy, v))
@@ -447,6 +452,36 @@ func TeamIDNotIn(vs ...uuid.UUID) predicate.Invitation {
 	return predicate.Invitation(sql.FieldNotIn(FieldTeamID, vs...))
 }
 
+// ProjectIDEQ applies the EQ predicate on the "project_id" field.
+func ProjectIDEQ(v uuid.UUID) predicate.Invitation {
+	return predicate.Invitation(sql.FieldEQ(FieldProjectID, v))
+}
+
+// ProjectIDNEQ applies the NEQ predicate on the "project_id" field.
+func ProjectIDNEQ(v uuid.UUID) predicate.Invitation {
+	return predicate.Invitation(sql.FieldNEQ(FieldProjectID, v))
+}
+
+// ProjectIDIn applies the In predicate on the "project_id" field.
+func ProjectIDIn(vs ...uuid.UUID) predicate.Invitation {
+	return predicate.Invitation(sql.FieldIn(FieldProjectID, vs...))
+}
+
+// ProjectIDNotIn applies the NotIn predicate on the "project_id" field.
+func ProjectIDNotIn(vs ...uuid.UUID) predicate.Invitation {
+	return predicate.Invitation(sql.FieldNotIn(FieldProjectID, vs...))
+}
+
+// ProjectIDIsNil applies the IsNil predicate on the "project_id" field.
+func ProjectIDIsNil() predicate.Invitation {
+	return predicate.Invitation(sql.FieldIsNull(FieldProjectID))
+}
+
+// ProjectIDNotNil applies the NotNil predicate on the "project_id" field.
+func ProjectIDNotNil() predicate.Invitation {
+	return predicate.Invitation(sql.FieldNotNull(FieldProjectID))
+}
+
 // InvitedByEQ applies the EQ predicate on the "invited_by" field.
 func InvitedByEQ(v uuid.UUID) predicate.Invitation {
 	return predicate.Invitation(sql.FieldEQ(FieldInvitedBy, v))
@@ -492,6 +527,29 @@ func HasTeam() predicate.Invitation {
 func HasTeamWith(preds ...predicate.Team) predicate.Invitation {
 	return predicate.Invitation(func(s *sql.Selector) {
 		step := newTeamStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProject applies the HasEdge predicate on the "project" edge.
+func HasProject() predicate.Invitation {
+	return predicate.Invitation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectWith applies the HasEdge predicate on the "project" edge with a given conditions (other predicates).
+func HasProjectWith(preds ...predicate.Project) predicate.Invitation {
+	return predicate.Invitation(func(s *sql.Selector) {
+		step := newProjectStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

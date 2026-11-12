@@ -338,16 +338,16 @@ func (_c *TeamRepositoryMock_DeleteIcon_Call) RunAndReturn(run func(ctx context.
 }
 
 // DeleteInvitation provides a mock function for the type TeamRepositoryMock
-func (_mock *TeamRepositoryMock) DeleteInvitation(ctx context.Context, teamID uuid.UUID, invitationID uuid.UUID) error {
-	ret := _mock.Called(ctx, teamID, invitationID)
+func (_mock *TeamRepositoryMock) DeleteInvitation(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID, invitationID uuid.UUID) error {
+	ret := _mock.Called(ctx, teamID, projectID, invitationID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteInvitation")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
-		r0 = returnFunc(ctx, teamID, invitationID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *uuid.UUID, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, teamID, projectID, invitationID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -362,12 +362,13 @@ type TeamRepositoryMock_DeleteInvitation_Call struct {
 // DeleteInvitation is a helper method to define mock.On call
 //   - ctx context.Context
 //   - teamID uuid.UUID
+//   - projectID *uuid.UUID
 //   - invitationID uuid.UUID
-func (_e *TeamRepositoryMock_Expecter) DeleteInvitation(ctx any, teamID any, invitationID any) *TeamRepositoryMock_DeleteInvitation_Call {
-	return &TeamRepositoryMock_DeleteInvitation_Call{Call: _e.mock.On("DeleteInvitation", ctx, teamID, invitationID)}
+func (_e *TeamRepositoryMock_Expecter) DeleteInvitation(ctx any, teamID any, projectID any, invitationID any) *TeamRepositoryMock_DeleteInvitation_Call {
+	return &TeamRepositoryMock_DeleteInvitation_Call{Call: _e.mock.On("DeleteInvitation", ctx, teamID, projectID, invitationID)}
 }
 
-func (_c *TeamRepositoryMock_DeleteInvitation_Call) Run(run func(ctx context.Context, teamID uuid.UUID, invitationID uuid.UUID)) *TeamRepositoryMock_DeleteInvitation_Call {
+func (_c *TeamRepositoryMock_DeleteInvitation_Call) Run(run func(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID, invitationID uuid.UUID)) *TeamRepositoryMock_DeleteInvitation_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -377,14 +378,19 @@ func (_c *TeamRepositoryMock_DeleteInvitation_Call) Run(run func(ctx context.Con
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 uuid.UUID
+		var arg2 *uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
+			arg2 = args[2].(*uuid.UUID)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -395,7 +401,81 @@ func (_c *TeamRepositoryMock_DeleteInvitation_Call) Return(err error) *TeamRepos
 	return _c
 }
 
-func (_c *TeamRepositoryMock_DeleteInvitation_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, invitationID uuid.UUID) error) *TeamRepositoryMock_DeleteInvitation_Call {
+func (_c *TeamRepositoryMock_DeleteInvitation_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID, invitationID uuid.UUID) error) *TeamRepositoryMock_DeleteInvitation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// EnsureProjectRoleGroups provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) EnsureProjectRoleGroups(ctx context.Context, tx repository.TxInterface, project *ent.Project) ([]*ent.Group, error) {
+	ret := _mock.Called(ctx, tx, project)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EnsureProjectRoleGroups")
+	}
+
+	var r0 []*ent.Group
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *ent.Project) ([]*ent.Group, error)); ok {
+		return returnFunc(ctx, tx, project)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, *ent.Project) []*ent.Group); ok {
+		r0 = returnFunc(ctx, tx, project)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Group)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, *ent.Project) error); ok {
+		r1 = returnFunc(ctx, tx, project)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_EnsureProjectRoleGroups_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EnsureProjectRoleGroups'
+type TeamRepositoryMock_EnsureProjectRoleGroups_Call struct {
+	*mock.Call
+}
+
+// EnsureProjectRoleGroups is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - project *ent.Project
+func (_e *TeamRepositoryMock_Expecter) EnsureProjectRoleGroups(ctx any, tx any, project any) *TeamRepositoryMock_EnsureProjectRoleGroups_Call {
+	return &TeamRepositoryMock_EnsureProjectRoleGroups_Call{Call: _e.mock.On("EnsureProjectRoleGroups", ctx, tx, project)}
+}
+
+func (_c *TeamRepositoryMock_EnsureProjectRoleGroups_Call) Run(run func(ctx context.Context, tx repository.TxInterface, project *ent.Project)) *TeamRepositoryMock_EnsureProjectRoleGroups_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 *ent.Project
+		if args[2] != nil {
+			arg2 = args[2].(*ent.Project)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_EnsureProjectRoleGroups_Call) Return(groups []*ent.Group, err error) *TeamRepositoryMock_EnsureProjectRoleGroups_Call {
+	_c.Call.Return(groups, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_EnsureProjectRoleGroups_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, project *ent.Project) ([]*ent.Group, error)) *TeamRepositoryMock_EnsureProjectRoleGroups_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -606,6 +686,80 @@ func (_c *TeamRepositoryMock_GetByID_Call) Return(team *ent.Team, err error) *Te
 }
 
 func (_c *TeamRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.Team, error)) *TeamRepositoryMock_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetGroupsReachingProject provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) GetGroupsReachingProject(ctx context.Context, teamID uuid.UUID, projectID uuid.UUID) ([]*ent.Group, error) {
+	ret := _mock.Called(ctx, teamID, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetGroupsReachingProject")
+	}
+
+	var r0 []*ent.Group
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) ([]*ent.Group, error)); ok {
+		return returnFunc(ctx, teamID, projectID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) []*ent.Group); ok {
+		r0 = returnFunc(ctx, teamID, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Group)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, teamID, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_GetGroupsReachingProject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetGroupsReachingProject'
+type TeamRepositoryMock_GetGroupsReachingProject_Call struct {
+	*mock.Call
+}
+
+// GetGroupsReachingProject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+//   - projectID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) GetGroupsReachingProject(ctx any, teamID any, projectID any) *TeamRepositoryMock_GetGroupsReachingProject_Call {
+	return &TeamRepositoryMock_GetGroupsReachingProject_Call{Call: _e.mock.On("GetGroupsReachingProject", ctx, teamID, projectID)}
+}
+
+func (_c *TeamRepositoryMock_GetGroupsReachingProject_Call) Run(run func(ctx context.Context, teamID uuid.UUID, projectID uuid.UUID)) *TeamRepositoryMock_GetGroupsReachingProject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetGroupsReachingProject_Call) Return(groups []*ent.Group, err error) *TeamRepositoryMock_GetGroupsReachingProject_Call {
+	_c.Call.Return(groups, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetGroupsReachingProject_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, projectID uuid.UUID) ([]*ent.Group, error)) *TeamRepositoryMock_GetGroupsReachingProject_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -949,8 +1103,8 @@ func (_c *TeamRepositoryMock_GetNamespace_Call) RunAndReturn(run func(ctx contex
 }
 
 // GetPendingInvitations provides a mock function for the type TeamRepositoryMock
-func (_mock *TeamRepositoryMock) GetPendingInvitations(ctx context.Context, teamID uuid.UUID) ([]*ent.Invitation, error) {
-	ret := _mock.Called(ctx, teamID)
+func (_mock *TeamRepositoryMock) GetPendingInvitations(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID) ([]*ent.Invitation, error) {
+	ret := _mock.Called(ctx, teamID, projectID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetPendingInvitations")
@@ -958,18 +1112,18 @@ func (_mock *TeamRepositoryMock) GetPendingInvitations(ctx context.Context, team
 
 	var r0 []*ent.Invitation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Invitation, error)); ok {
-		return returnFunc(ctx, teamID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *uuid.UUID) ([]*ent.Invitation, error)); ok {
+		return returnFunc(ctx, teamID, projectID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Invitation); ok {
-		r0 = returnFunc(ctx, teamID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *uuid.UUID) []*ent.Invitation); ok {
+		r0 = returnFunc(ctx, teamID, projectID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*ent.Invitation)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, teamID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, teamID, projectID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -984,11 +1138,85 @@ type TeamRepositoryMock_GetPendingInvitations_Call struct {
 // GetPendingInvitations is a helper method to define mock.On call
 //   - ctx context.Context
 //   - teamID uuid.UUID
-func (_e *TeamRepositoryMock_Expecter) GetPendingInvitations(ctx any, teamID any) *TeamRepositoryMock_GetPendingInvitations_Call {
-	return &TeamRepositoryMock_GetPendingInvitations_Call{Call: _e.mock.On("GetPendingInvitations", ctx, teamID)}
+//   - projectID *uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) GetPendingInvitations(ctx any, teamID any, projectID any) *TeamRepositoryMock_GetPendingInvitations_Call {
+	return &TeamRepositoryMock_GetPendingInvitations_Call{Call: _e.mock.On("GetPendingInvitations", ctx, teamID, projectID)}
 }
 
-func (_c *TeamRepositoryMock_GetPendingInvitations_Call) Run(run func(ctx context.Context, teamID uuid.UUID)) *TeamRepositoryMock_GetPendingInvitations_Call {
+func (_c *TeamRepositoryMock_GetPendingInvitations_Call) Run(run func(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID)) *TeamRepositoryMock_GetPendingInvitations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 *uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetPendingInvitations_Call) Return(invitations []*ent.Invitation, err error) *TeamRepositoryMock_GetPendingInvitations_Call {
+	_c.Call.Return(invitations, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetPendingInvitations_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, projectID *uuid.UUID) ([]*ent.Invitation, error)) *TeamRepositoryMock_GetPendingInvitations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetProjectRoleGroups provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) GetProjectRoleGroups(ctx context.Context, projectID uuid.UUID) ([]*ent.Group, error) {
+	ret := _mock.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProjectRoleGroups")
+	}
+
+	var r0 []*ent.Group
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.Group, error)); ok {
+		return returnFunc(ctx, projectID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.Group); ok {
+		r0 = returnFunc(ctx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Group)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_GetProjectRoleGroups_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProjectRoleGroups'
+type TeamRepositoryMock_GetProjectRoleGroups_Call struct {
+	*mock.Call
+}
+
+// GetProjectRoleGroups is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) GetProjectRoleGroups(ctx any, projectID any) *TeamRepositoryMock_GetProjectRoleGroups_Call {
+	return &TeamRepositoryMock_GetProjectRoleGroups_Call{Call: _e.mock.On("GetProjectRoleGroups", ctx, projectID)}
+}
+
+func (_c *TeamRepositoryMock_GetProjectRoleGroups_Call) Run(run func(ctx context.Context, projectID uuid.UUID)) *TeamRepositoryMock_GetProjectRoleGroups_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1006,12 +1234,12 @@ func (_c *TeamRepositoryMock_GetPendingInvitations_Call) Run(run func(ctx contex
 	return _c
 }
 
-func (_c *TeamRepositoryMock_GetPendingInvitations_Call) Return(invitations []*ent.Invitation, err error) *TeamRepositoryMock_GetPendingInvitations_Call {
-	_c.Call.Return(invitations, err)
+func (_c *TeamRepositoryMock_GetProjectRoleGroups_Call) Return(groups []*ent.Group, err error) *TeamRepositoryMock_GetProjectRoleGroups_Call {
+	_c.Call.Return(groups, err)
 	return _c
 }
 
-func (_c *TeamRepositoryMock_GetPendingInvitations_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID) ([]*ent.Invitation, error)) *TeamRepositoryMock_GetPendingInvitations_Call {
+func (_c *TeamRepositoryMock_GetProjectRoleGroups_Call) RunAndReturn(run func(ctx context.Context, projectID uuid.UUID) ([]*ent.Group, error)) *TeamRepositoryMock_GetProjectRoleGroups_Call {
 	_c.Call.Return(run)
 	return _c
 }

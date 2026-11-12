@@ -45,6 +45,10 @@ const (
 	EdgeDefaultEnvironment = "default_environment"
 	// EdgeProjectWebhooks holds the string denoting the project_webhooks edge name in mutations.
 	EdgeProjectWebhooks = "project_webhooks"
+	// EdgeRoleGroups holds the string denoting the role_groups edge name in mutations.
+	EdgeRoleGroups = "role_groups"
+	// EdgeInvitations holds the string denoting the invitations edge name in mutations.
+	EdgeInvitations = "invitations"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
 	// TeamTable is the table that holds the team relation/edge.
@@ -75,6 +79,20 @@ const (
 	ProjectWebhooksInverseTable = "webhooks"
 	// ProjectWebhooksColumn is the table column denoting the project_webhooks relation/edge.
 	ProjectWebhooksColumn = "project_id"
+	// RoleGroupsTable is the table that holds the role_groups relation/edge.
+	RoleGroupsTable = "groups"
+	// RoleGroupsInverseTable is the table name for the Group entity.
+	// It exists in this package in order to avoid circular dependency with the "group" package.
+	RoleGroupsInverseTable = "groups"
+	// RoleGroupsColumn is the table column denoting the role_groups relation/edge.
+	RoleGroupsColumn = "project_id"
+	// InvitationsTable is the table that holds the invitations relation/edge.
+	InvitationsTable = "invitations"
+	// InvitationsInverseTable is the table name for the Invitation entity.
+	// It exists in this package in order to avoid circular dependency with the "invitation" package.
+	InvitationsInverseTable = "invitations"
+	// InvitationsColumn is the table column denoting the invitations relation/edge.
+	InvitationsColumn = "project_id"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -219,6 +237,34 @@ func ByProjectWebhooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProjectWebhooksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRoleGroupsCount orders the results by role_groups count.
+func ByRoleGroupsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoleGroupsStep(), opts...)
+	}
+}
+
+// ByRoleGroups orders the results by role_groups terms.
+func ByRoleGroups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoleGroupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByInvitationsCount orders the results by invitations count.
+func ByInvitationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newInvitationsStep(), opts...)
+	}
+}
+
+// ByInvitations orders the results by invitations terms.
+func ByInvitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newInvitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTeamStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -245,5 +291,19 @@ func newProjectWebhooksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectWebhooksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ProjectWebhooksTable, ProjectWebhooksColumn),
+	)
+}
+func newRoleGroupsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoleGroupsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoleGroupsTable, RoleGroupsColumn),
+	)
+}
+func newInvitationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(InvitationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InvitationsTable, InvitationsColumn),
 	)
 }

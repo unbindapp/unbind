@@ -39,7 +39,8 @@ func (self *HandlerGroup) InviteTeamMember(ctx context.Context, input *InviteTea
 
 type ListTeamInvitationsInput struct {
 	server.BaseAuthInput
-	TeamID uuid.UUID `query:"team_id" format:"uuid" required:"true"`
+	TeamID    uuid.UUID `query:"team_id" format:"uuid" required:"true"`
+	ProjectID uuid.UUID `query:"project_id" format:"uuid" required:"false" doc:"If present, list the invitations to this project of the team"`
 }
 
 type ListTeamInvitationsResponse struct {
@@ -54,7 +55,7 @@ func (self *HandlerGroup) ListTeamInvitations(ctx context.Context, input *ListTe
 		return nil, err
 	}
 
-	invitations, err := self.srv.TeamService.ListInvitations(ctx, user.ID, input.TeamID)
+	invitations, err := self.srv.TeamService.ListInvitations(ctx, user.ID, input.TeamID, optionalID(input.ProjectID))
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

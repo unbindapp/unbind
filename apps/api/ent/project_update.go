@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/environment"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/team"
@@ -229,6 +231,36 @@ func (_u *ProjectUpdate) AddProjectWebhooks(v ...*Webhook) *ProjectUpdate {
 	return _u.AddProjectWebhookIDs(ids...)
 }
 
+// AddRoleGroupIDs adds the "role_groups" edge to the Group entity by IDs.
+func (_u *ProjectUpdate) AddRoleGroupIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.AddRoleGroupIDs(ids...)
+	return _u
+}
+
+// AddRoleGroups adds the "role_groups" edges to the Group entity.
+func (_u *ProjectUpdate) AddRoleGroups(v ...*Group) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRoleGroupIDs(ids...)
+}
+
+// AddInvitationIDs adds the "invitations" edge to the Invitation entity by IDs.
+func (_u *ProjectUpdate) AddInvitationIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.AddInvitationIDs(ids...)
+	return _u
+}
+
+// AddInvitations adds the "invitations" edges to the Invitation entity.
+func (_u *ProjectUpdate) AddInvitations(v ...*Invitation) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInvitationIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdate) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -286,6 +318,48 @@ func (_u *ProjectUpdate) RemoveProjectWebhooks(v ...*Webhook) *ProjectUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveProjectWebhookIDs(ids...)
+}
+
+// ClearRoleGroups clears all "role_groups" edges to the Group entity.
+func (_u *ProjectUpdate) ClearRoleGroups() *ProjectUpdate {
+	_u.mutation.ClearRoleGroups()
+	return _u
+}
+
+// RemoveRoleGroupIDs removes the "role_groups" edge to Group entities by IDs.
+func (_u *ProjectUpdate) RemoveRoleGroupIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.RemoveRoleGroupIDs(ids...)
+	return _u
+}
+
+// RemoveRoleGroups removes "role_groups" edges to Group entities.
+func (_u *ProjectUpdate) RemoveRoleGroups(v ...*Group) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRoleGroupIDs(ids...)
+}
+
+// ClearInvitations clears all "invitations" edges to the Invitation entity.
+func (_u *ProjectUpdate) ClearInvitations() *ProjectUpdate {
+	_u.mutation.ClearInvitations()
+	return _u
+}
+
+// RemoveInvitationIDs removes the "invitations" edge to Invitation entities by IDs.
+func (_u *ProjectUpdate) RemoveInvitationIDs(ids ...uuid.UUID) *ProjectUpdate {
+	_u.mutation.RemoveInvitationIDs(ids...)
+	return _u
+}
+
+// RemoveInvitations removes "invitations" edges to Invitation entities.
+func (_u *ProjectUpdate) RemoveInvitations(v ...*Invitation) *ProjectUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInvitationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -541,6 +615,96 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.RoleGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRoleGroupsIDs(); len(nodes) > 0 && !_u.mutation.RoleGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RoleGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInvitationsIDs(); len(nodes) > 0 && !_u.mutation.InvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -758,6 +922,36 @@ func (_u *ProjectUpdateOne) AddProjectWebhooks(v ...*Webhook) *ProjectUpdateOne 
 	return _u.AddProjectWebhookIDs(ids...)
 }
 
+// AddRoleGroupIDs adds the "role_groups" edge to the Group entity by IDs.
+func (_u *ProjectUpdateOne) AddRoleGroupIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.AddRoleGroupIDs(ids...)
+	return _u
+}
+
+// AddRoleGroups adds the "role_groups" edges to the Group entity.
+func (_u *ProjectUpdateOne) AddRoleGroups(v ...*Group) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRoleGroupIDs(ids...)
+}
+
+// AddInvitationIDs adds the "invitations" edge to the Invitation entity by IDs.
+func (_u *ProjectUpdateOne) AddInvitationIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.AddInvitationIDs(ids...)
+	return _u
+}
+
+// AddInvitations adds the "invitations" edges to the Invitation entity.
+func (_u *ProjectUpdateOne) AddInvitations(v ...*Invitation) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddInvitationIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_u *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return _u.mutation
@@ -815,6 +1009,48 @@ func (_u *ProjectUpdateOne) RemoveProjectWebhooks(v ...*Webhook) *ProjectUpdateO
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveProjectWebhookIDs(ids...)
+}
+
+// ClearRoleGroups clears all "role_groups" edges to the Group entity.
+func (_u *ProjectUpdateOne) ClearRoleGroups() *ProjectUpdateOne {
+	_u.mutation.ClearRoleGroups()
+	return _u
+}
+
+// RemoveRoleGroupIDs removes the "role_groups" edge to Group entities by IDs.
+func (_u *ProjectUpdateOne) RemoveRoleGroupIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.RemoveRoleGroupIDs(ids...)
+	return _u
+}
+
+// RemoveRoleGroups removes "role_groups" edges to Group entities.
+func (_u *ProjectUpdateOne) RemoveRoleGroups(v ...*Group) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRoleGroupIDs(ids...)
+}
+
+// ClearInvitations clears all "invitations" edges to the Invitation entity.
+func (_u *ProjectUpdateOne) ClearInvitations() *ProjectUpdateOne {
+	_u.mutation.ClearInvitations()
+	return _u
+}
+
+// RemoveInvitationIDs removes the "invitations" edge to Invitation entities by IDs.
+func (_u *ProjectUpdateOne) RemoveInvitationIDs(ids ...uuid.UUID) *ProjectUpdateOne {
+	_u.mutation.RemoveInvitationIDs(ids...)
+	return _u
+}
+
+// RemoveInvitations removes "invitations" edges to Invitation entities.
+func (_u *ProjectUpdateOne) RemoveInvitations(v ...*Invitation) *ProjectUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveInvitationIDs(ids...)
 }
 
 // Where appends a list predicates to the ProjectUpdate builder.
@@ -1093,6 +1329,96 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(webhook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RoleGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRoleGroupsIDs(); len(nodes) > 0 && !_u.mutation.RoleGroupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RoleGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.RoleGroupsTable,
+			Columns: []string{project.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.InvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedInvitationsIDs(); len(nodes) > 0 && !_u.mutation.InvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.InvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.InvitationsTable,
+			Columns: []string{project.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

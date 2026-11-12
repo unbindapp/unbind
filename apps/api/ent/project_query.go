@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/environment"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/team"
@@ -31,6 +33,8 @@ type ProjectQuery struct {
 	withEnvironments       *EnvironmentQuery
 	withDefaultEnvironment *EnvironmentQuery
 	withProjectWebhooks    *WebhookQuery
+	withRoleGroups         *GroupQuery
+	withInvitations        *InvitationQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -149,6 +153,50 @@ func (_q *ProjectQuery) QueryProjectWebhooks() *WebhookQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(webhook.Table, webhook.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectWebhooksTable, project.ProjectWebhooksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoleGroups chains the current query on the "role_groups" edge.
+func (_q *ProjectQuery) QueryRoleGroups() *GroupQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.RoleGroupsTable, project.RoleGroupsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInvitations chains the current query on the "invitations" edge.
+func (_q *ProjectQuery) QueryInvitations() *InvitationQuery {
+	query := (&InvitationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(invitation.Table, invitation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.InvitationsTable, project.InvitationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +400,8 @@ func (_q *ProjectQuery) Clone() *ProjectQuery {
 		withEnvironments:       _q.withEnvironments.Clone(),
 		withDefaultEnvironment: _q.withDefaultEnvironment.Clone(),
 		withProjectWebhooks:    _q.withProjectWebhooks.Clone(),
+		withRoleGroups:         _q.withRoleGroups.Clone(),
+		withInvitations:        _q.withInvitations.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -400,6 +450,28 @@ func (_q *ProjectQuery) WithProjectWebhooks(opts ...func(*WebhookQuery)) *Projec
 		opt(query)
 	}
 	_q.withProjectWebhooks = query
+	return _q
+}
+
+// WithRoleGroups tells the query-builder to eager-load the nodes that are connected to
+// the "role_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithRoleGroups(opts ...func(*GroupQuery)) *ProjectQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRoleGroups = query
+	return _q
+}
+
+// WithInvitations tells the query-builder to eager-load the nodes that are connected to
+// the "invitations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithInvitations(opts ...func(*InvitationQuery)) *ProjectQuery {
+	query := (&InvitationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInvitations = query
 	return _q
 }
 
@@ -481,11 +553,13 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [6]bool{
 			_q.withTeam != nil,
 			_q.withEnvironments != nil,
 			_q.withDefaultEnvironment != nil,
 			_q.withProjectWebhooks != nil,
+			_q.withRoleGroups != nil,
+			_q.withInvitations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -532,6 +606,20 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 		if err := _q.loadProjectWebhooks(ctx, query, nodes,
 			func(n *Project) { n.Edges.ProjectWebhooks = []*Webhook{} },
 			func(n *Project, e *Webhook) { n.Edges.ProjectWebhooks = append(n.Edges.ProjectWebhooks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRoleGroups; query != nil {
+		if err := _q.loadRoleGroups(ctx, query, nodes,
+			func(n *Project) { n.Edges.RoleGroups = []*Group{} },
+			func(n *Project, e *Group) { n.Edges.RoleGroups = append(n.Edges.RoleGroups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInvitations; query != nil {
+		if err := _q.loadInvitations(ctx, query, nodes,
+			func(n *Project) { n.Edges.Invitations = []*Invitation{} },
+			func(n *Project, e *Invitation) { n.Edges.Invitations = append(n.Edges.Invitations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -644,6 +732,72 @@ func (_q *ProjectQuery) loadProjectWebhooks(ctx context.Context, query *WebhookQ
 	}
 	query.Where(predicate.Webhook(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(project.ProjectWebhooksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "project_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadRoleGroups(ctx context.Context, query *GroupQuery, nodes []*Project, init func(*Project), assign func(*Project, *Group)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(group.FieldProjectID)
+	}
+	query.Where(predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.RoleGroupsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "project_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadInvitations(ctx context.Context, query *InvitationQuery, nodes []*Project, init func(*Project), assign func(*Project, *Invitation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(invitation.FieldProjectID)
+	}
+	query.Where(predicate.Invitation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.InvitationsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -13,9 +13,13 @@ import type {
 export const queryKeyTeams = {
   list: () => ["teams", "list"] as const,
   detail: (input: { teamId: string }) => ["teams", "detail", input.teamId] as const,
-  members: (input: { teamId: string }) => ["teams", "members", input.teamId] as const,
-  invitations: (input: { teamId: string }) => ["teams", "invitations", input.teamId] as const,
+  members: (input: TMembersScope) =>
+    ["teams", "members", input.teamId, input.projectId ?? null] as const,
+  invitations: (input: TMembersScope) =>
+    ["teams", "invitations", input.teamId, input.projectId ?? null] as const,
 };
+
+export type TMembersScope = { teamId: string; projectId?: string };
 
 // Mirrors the old teams tRPC router: same input + the `res.data` → `{ teams }` reshape.
 export const teamsListQuery = () =>
@@ -36,20 +40,26 @@ export const teamQuery = (input: { teamId: string }) =>
     },
   });
 
-export const teamMembersQuery = (input: { teamId: string }) =>
+export const teamMembersQuery = (input: TMembersScope) =>
   queryOptions({
     queryKey: queryKeyTeams.members(input),
     queryFn: async () => {
-      const res = await getGoClient().teams.members({ team_id: input.teamId });
+      const res = await getGoClient().teams.members({
+        team_id: input.teamId,
+        project_id: input.projectId,
+      });
       return { members: res.data };
     },
   });
 
-export const teamInvitationsQuery = (input: { teamId: string }) =>
+export const teamInvitationsQuery = (input: TMembersScope) =>
   queryOptions({
     queryKey: queryKeyTeams.invitations(input),
     queryFn: async () => {
-      const res = await getGoClient().teams.invitations({ team_id: input.teamId });
+      const res = await getGoClient().teams.invitations({
+        team_id: input.teamId,
+        project_id: input.projectId,
+      });
       return { invitations: res.data };
     },
   });
@@ -67,43 +77,43 @@ export async function deleteTeam(input: { teamId: string }) {
   return { data: res.data };
 }
 
-export async function inviteTeamMember(input: {
-  teamId: string;
-  email: string;
-  role: PermittedAction;
-}) {
+export async function inviteTeamMember(
+  input: TMembersScope & { email: string; role: PermittedAction },
+) {
   const res = await getGoClient().teams.members.invite({
     team_id: input.teamId,
+    project_id: input.projectId,
     email: input.email,
     role: input.role,
   });
   return { data: res.data };
 }
 
-export async function updateTeamMemberRole(input: {
-  teamId: string;
-  userId: string;
-  role: PermittedAction;
-}) {
+export async function updateTeamMemberRole(
+  input: TMembersScope & { userId: string; role: PermittedAction },
+) {
   const res = await getGoClient().teams.members.update({
     team_id: input.teamId,
+    project_id: input.projectId,
     user_id: input.userId,
     role: input.role,
   });
   return { data: res.data };
 }
 
-export async function removeTeamMember(input: { teamId: string; userId: string }) {
+export async function removeTeamMember(input: TMembersScope & { userId: string }) {
   const res = await getGoClient().teams.members.remove({
     team_id: input.teamId,
+    project_id: input.projectId,
     user_id: input.userId,
   });
   return { data: res.data };
 }
 
-export async function revokeTeamInvitation(input: { teamId: string; invitationId: string }) {
+export async function revokeTeamInvitation(input: TMembersScope & { invitationId: string }) {
   const res = await getGoClient().teams.invitations.revoke({
     team_id: input.teamId,
+    project_id: input.projectId,
     invitation_id: input.invitationId,
   });
   return { data: res.data };

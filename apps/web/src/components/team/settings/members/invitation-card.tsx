@@ -43,7 +43,11 @@ export default function InvitationCard({ invitation }: { invitation: TTeamInvita
         onDialogClose={reset}
         error={error}
         onSubmit={async () => {
-          await revoke({ teamId: invitation.team_id, invitationId: invitation.id });
+          await revoke({
+            teamId: invitation.team_id,
+            projectId: invitation.project_id,
+            invitationId: invitation.id,
+          });
         }}
       >
         <Button
