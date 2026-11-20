@@ -19,25 +19,93 @@ export function getNewEntityIdForVariable({ name, value }: { name: string; value
   return `${name}|${value}`;
 }
 
-export function unwrapQuotes(value: string) {
-  let newValue = value;
-  if (newValue.startsWith('"') && newValue.endsWith('"')) {
-    newValue = newValue.slice(1, -1);
+const RAW_TEXT_QUOTES = ['"', "'", "`"];
+
+export type TRawTextEntry = {
+  name: string;
+  value: string;
+  from: number;
+  to: number;
+  isAssignment: boolean;
+};
+
+export function scanRawText(text: string): TRawTextEntry[] {
+  const end = text.trimEnd().length;
+  const entries: TRawTextEntry[] = [];
+  let from = text.length - text.trimStart().length;
+  while (from < end) {
+    const lineEnd = lineEndAt(text, from, end);
+    if (text.slice(from, lineEnd).trim() === "") {
+      from = lineEnd + 1;
+      continue;
+    }
+    const entry = readRawTextEntry(text, from, lineEnd, end);
+    entries.push(entry);
+    from = entry.to + 1;
   }
-  return newValue;
+  return entries;
+}
+
+function lineEndAt(text: string, from: number, end: number) {
+  const index = text.indexOf("\n", from);
+  return index === -1 || index > end ? end : index;
+}
+
+function readRawTextEntry(text: string, from: number, lineEnd: number, end: number): TRawTextEntry {
+  const separator = text.indexOf("=", from);
+  if (separator === -1 || separator >= lineEnd) {
+    return { name: text.slice(from, lineEnd), value: "", from, to: lineEnd, isAssignment: false };
+  }
+
+  const valueFrom = separator + 1;
+  const bare: TRawTextEntry = {
+    name: text.slice(from, separator),
+    value: text.slice(valueFrom, lineEnd),
+    from,
+    to: lineEnd,
+    isAssignment: true,
+  };
+  const quote = text[valueFrom];
+  if (valueFrom >= lineEnd || !RAW_TEXT_QUOTES.includes(quote)) return bare;
+
+  const restOfLine = text.slice(valueFrom + 1, lineEnd);
+  if (restOfLine.endsWith(quote)) return { ...bare, value: restOfLine.slice(0, -1) };
+  if (restOfLine.includes(quote)) return bare;
+
+  const closing = closingQuoteAt(text, quote, lineEnd, end);
+  if (closing === -1) return bare;
+  return { ...bare, value: text.slice(valueFrom + 1, closing), to: closing + 1 };
+}
+
+function closingQuoteAt(text: string, quote: string, from: number, end: number) {
+  let index = text.indexOf(quote, from);
+  while (index !== -1 && index < end) {
+    if (index + 1 === end || text[index + 1] === "\n") return index;
+    index = text.indexOf(quote, index + 1);
+  }
+  return -1;
 }
 
 export function getVariablesFromRawText(text: string) {
-  const cleaned = text.trim();
-  const lines = cleaned ? cleaned.split("\n") : [];
-  const pairs = lines
-    .filter((line) => line.trim() !== "")
-    .map((line) => {
-      const [name, ...rest] = line.split("=");
-      const value = unwrapQuotes(rest.join("="));
-      return { name, value };
-    });
-  return pairs;
+  return scanRawText(text.replaceAll("\r\n", "\n")).map(({ name, value }) => ({ name, value }));
+}
+
+export function toRawTextValue(value: string) {
+  const readsBackBare =
+    !value.includes("\n") && value === value.trim() && !RAW_TEXT_QUOTES.includes(value[0]);
+  if (readsBackBare) return value;
+
+  const quote =
+    RAW_TEXT_QUOTES.find((q) => !value.includes(q)) ??
+    RAW_TEXT_QUOTES.find((q) => closesOnlyAtItsEnd(value, q)) ??
+    RAW_TEXT_QUOTES[0];
+  return quote + value + quote;
+}
+
+function closesOnlyAtItsEnd(value: string, quote: string) {
+  const firstLineEnd = value.indexOf("\n");
+  if (firstLineEnd === -1) return true;
+  return !value.slice(0, firstLineEnd).includes(quote) && !value.includes(quote + "\n");
 }
 
 /** Readable `${Source.KEY}` tokens become their stored template; unknown ones stay text. */
@@ -80,14 +148,15 @@ export function referencesForVariable<T extends { template: string }>(
   return map;
 }
 
-const envNamePattern = /^([-._A-Za-z0-9]+)=/;
+const envNamePattern = /^[-._A-Za-z0-9]+$/;
 
-/** The NAME of the NAME=value line holding pos in a raw editor document */
+export function envAssignments(doc: string) {
+  return scanRawText(doc).filter((entry) => entry.isAssignment && envNamePattern.test(entry.name));
+}
+
+/** The NAME of the NAME=value entry holding pos in a raw editor document */
 export function envVariableNameAt(doc: string, pos: number) {
-  const start = doc.lastIndexOf("\n", pos - 1) + 1;
-  const end = doc.indexOf("\n", pos);
-  const line = doc.slice(start, end < 0 ? doc.length : end);
-  return envNamePattern.exec(line)?.[1];
+  return envAssignments(doc).find((entry) => entry.from <= pos && pos <= entry.to)?.name;
 }
 
 /** Stored templates become their readable form, using the API's reference list for the value. */
