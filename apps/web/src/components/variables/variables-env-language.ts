@@ -1,4 +1,4 @@
-import { envVariableNameAt } from "@/components/variables/helpers";
+import { envAssignments, envVariableNameAt } from "@/components/variables/helpers";
 import {
   createVariableReferenceLanguage,
   type TVariableReferenceData,
@@ -22,9 +22,8 @@ type TIsStaged = (name: string) => boolean;
 const envName = Decoration.mark({ class: "tok-env-name" });
 const envNameStaged = Decoration.mark({ class: "tok-env-name-staged" });
 const envPunctuation = Decoration.mark({ class: "tok-env-punct" });
-const namePattern = /^([-._A-Za-z0-9]+)(=)/;
 
-// Marks the NAME= prefix of every line; references inside the value are
+// Marks the NAME= prefix of every variable; references inside the value are
 // decorated by the shared reference language.
 function envLineHighlighter(isStaged: TIsStaged) {
   return ViewPlugin.fromClass(
@@ -34,9 +33,8 @@ function envLineHighlighter(isStaged: TIsStaged) {
         this.decorations = build(view, isStaged);
       }
       update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged) {
-          this.decorations = build(update.view, isStaged);
-        }
+        if (!update.docChanged) return;
+        this.decorations = build(update.view, isStaged);
       }
     },
     { decorations: (plugin) => plugin.decorations },
@@ -45,18 +43,10 @@ function envLineHighlighter(isStaged: TIsStaged) {
 
 function build(view: EditorView, isStaged: TIsStaged) {
   const builder = new RangeSetBuilder<Decoration>();
-  for (const { from, to } of view.visibleRanges) {
-    let position = from;
-    while (position <= to) {
-      const line = view.state.doc.lineAt(position);
-      const match = namePattern.exec(line.text);
-      if (match) {
-        const nameEnd = line.from + match[1].length;
-        builder.add(line.from, nameEnd, isStaged(match[1]) ? envNameStaged : envName);
-        builder.add(nameEnd, nameEnd + 1, envPunctuation);
-      }
-      position = line.to + 1;
-    }
+  for (const { name, from } of envAssignments(view.state.doc.toString())) {
+    const nameEnd = from + name.length;
+    builder.add(from, nameEnd, isStaged(name) ? envNameStaged : envName);
+    builder.add(nameEnd, nameEnd + 1, envPunctuation);
   }
   return builder.finish();
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  envAssignments,
   envVariableNameAt,
   expectedProvidedVariableCounts,
   findChangedLockedVariable,
@@ -10,6 +11,7 @@ import {
   pendingDatabaseUrlNames,
   splitByStoredReferences,
   splitProvidedVariables,
+  toRawTextValue,
   toReadableValue,
   toStoredVariables,
 } from "./helpers.ts";
@@ -157,6 +159,59 @@ test("raw text parses to name/value pairs", () => {
     { name: "A", value: "1" },
     { name: "B", value: "x=y" },
   ]);
+});
+
+const registrationJson =
+  '{\n  "id": "ooye",\n  "url": "http://localhost:6693",\n  "rate_limited": false\n}';
+
+test("raw text reads a quoted value across lines", () => {
+  const text = `A=1\nREGISTRATION='${registrationJson}'\nB=2`;
+  assert.deepEqual(getVariablesFromRawText(text), [
+    { name: "A", value: "1" },
+    { name: "REGISTRATION", value: registrationJson },
+    { name: "B", value: "2" },
+  ]);
+  assert.deepEqual(getVariablesFromRawText('A="x\n\ny=1"\r\nB="z"\r\n'), [
+    { name: "A", value: "x\n\ny=1" },
+    { name: "B", value: "z" },
+  ]);
+});
+
+test("raw text keeps a quote that never closes at a line end as text", () => {
+  assert.deepEqual(getVariablesFromRawText('A="x" # note\nB="y"\nC=\'open\nD=1'), [
+    { name: "A", value: '"x" # note' },
+    { name: "B", value: "y" },
+    { name: "C", value: "'open" },
+    { name: "D", value: "1" },
+  ]);
+});
+
+test("toRawTextValue quotes only the values that would not read back bare", () => {
+  assert.equal(toRawTextValue("plain value"), "plain value");
+  assert.equal(toRawTextValue('{"a":"b"}'), '{"a":"b"}');
+  assert.equal(toRawTextValue("x\ny"), '"x\ny"');
+  assert.equal(toRawTextValue(registrationJson), `'${registrationJson}'`);
+  assert.equal(toRawTextValue('"quoted"'), `'"quoted"'`);
+  assert.equal(toRawTextValue(" padded "), '" padded "');
+});
+
+test("every value survives a trip through the raw text", () => {
+  const values = [
+    "plain",
+    registrationJson,
+    '"quoted"',
+    "'single'",
+    '"starts with a quote',
+    " padded ",
+    "line one\n\nline three\n",
+    "\nstarts with a newline",
+    `it's "both"\nand \`ticks\``,
+    `ends with "a quote"\nthen 'another'\nlast`,
+    "A=1\nB=2",
+  ];
+  const variables = values.map((value, i) => ({ name: `VAR_${i}`, value }));
+  const text = variables.map((v) => `${v.name}=${toRawTextValue(v.value)}`).join("\n");
+  assert.deepEqual(getVariablesFromRawText(text), variables);
 });
 
 function reference(
@@ -329,6 +384,19 @@ test("envVariableNameAt reads the name of the line at the cursor", () => {
   assert.equal(envVariableNameAt(doc, doc.indexOf("${") + 2), "PUBLIC_URL");
   assert.equal(envVariableNameAt(doc, doc.indexOf("equals")), undefined);
   assert.equal(envVariableNameAt(doc, doc.length), "B");
+});
+
+test("a multiline value belongs to the variable that opened it", () => {
+  const doc = 'SCRIPT="first\nINNER=${\nlast"\nNEXT=1';
+  assert.equal(envVariableNameAt(doc, doc.indexOf("${") + 2), "SCRIPT");
+  assert.equal(envVariableNameAt(doc, doc.length), "NEXT");
+  assert.deepEqual(
+    envAssignments(doc).map((entry) => [entry.name, entry.from]),
+    [
+      ["SCRIPT", 0],
+      ["NEXT", doc.indexOf("NEXT")],
+    ],
+  );
 });
 
 test("expectedProvidedVariableCounts matches the endpoint keys the API provides", () => {
