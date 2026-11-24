@@ -236,6 +236,52 @@ func (_c *ResourceBuilderMock_BuildDeployment_Call) RunAndReturn(run func() (*v1
 	return _c
 }
 
+// BuildRenderedMountsSecret provides a mock function for the type ResourceBuilderMock
+func (_mock *ResourceBuilderMock) BuildRenderedMountsSecret() *v11.Secret {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for BuildRenderedMountsSecret")
+	}
+
+	var r0 *v11.Secret
+	if returnFunc, ok := ret.Get(0).(func() *v11.Secret); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*v11.Secret)
+		}
+	}
+	return r0
+}
+
+// ResourceBuilderMock_BuildRenderedMountsSecret_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BuildRenderedMountsSecret'
+type ResourceBuilderMock_BuildRenderedMountsSecret_Call struct {
+	*mock.Call
+}
+
+// BuildRenderedMountsSecret is a helper method to define mock.On call
+func (_e *ResourceBuilderMock_Expecter) BuildRenderedMountsSecret() *ResourceBuilderMock_BuildRenderedMountsSecret_Call {
+	return &ResourceBuilderMock_BuildRenderedMountsSecret_Call{Call: _e.mock.On("BuildRenderedMountsSecret")}
+}
+
+func (_c *ResourceBuilderMock_BuildRenderedMountsSecret_Call) Run(run func()) *ResourceBuilderMock_BuildRenderedMountsSecret_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ResourceBuilderMock_BuildRenderedMountsSecret_Call) Return(secret *v11.Secret) *ResourceBuilderMock_BuildRenderedMountsSecret_Call {
+	_c.Call.Return(secret)
+	return _c
+}
+
+func (_c *ResourceBuilderMock_BuildRenderedMountsSecret_Call) RunAndReturn(run func() *v11.Secret) *ResourceBuilderMock_BuildRenderedMountsSecret_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // BuildRoutes provides a mock function for the type ResourceBuilderMock
 func (_mock *ResourceBuilderMock) BuildRoutes(listenerGateways map[string]string) ([]client.Object, error) {
 	ret := _mock.Called(listenerGateways)

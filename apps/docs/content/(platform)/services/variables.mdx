@@ -59,6 +59,8 @@ A service can point at its own values the same way. `PUBLIC_URL=${my-app.UNBIND_
 
 A referenced value may hold references of its own. They are rendered too, so `${my-app.DATABASE_URL}` stays correct when that variable is itself `${Postgres.UNBIND_DATABASE_URL_PRIVATE}`. A chain that loops back on itself is left as literal text.
 
+A variable mounted as a file gets the rendered value too.
+
 ### When a referenced value changes
 
 Services that reference it are redeployed, so they pick up the new value, and so is the service itself when one of its variables references another. You see them under **Affected Services** before you confirm.

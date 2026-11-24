@@ -14,6 +14,7 @@ import (
 type ResourceBuilderInterface interface {
 	BuildDeployment() (*appsv1.Deployment, error)
 	BuildCronJob() (*batchv1.CronJob, error)
+	BuildRenderedMountsSecret() *corev1.Secret
 	BuildServices() ([]*corev1.Service, error)
 	BuildRoutes(listenerGateways map[string]string) ([]client.Object, error)
 	BuildDatabaseObjects(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error)
