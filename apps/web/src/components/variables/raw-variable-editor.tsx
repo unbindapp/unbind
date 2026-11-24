@@ -30,6 +30,7 @@ import {
   getVariablesFromRawText,
   referenceMapForVariables,
   referencesForVariable,
+  toRawTextValue,
   toReadableValue,
   toStoredValue,
 } from "@/components/variables/helpers";
@@ -567,7 +568,8 @@ function getEditorValue({
   return variables
     .map((variable) => {
       if (hidden) return `${variable.name}=${HIDDEN_VARIABLE_VALUE}`;
-      return `${variable.name}=${toReadableValue(variable.value, variable.references, storedToReadable)}`;
+      const readable = toReadableValue(variable.value, variable.references, storedToReadable);
+      return `${variable.name}=${toRawTextValue(readable)}`;
     })
     .join("\n");
 }

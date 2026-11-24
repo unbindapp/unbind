@@ -11,6 +11,14 @@ Open a service and go to **Variables**. Press **New Variable**, type a name and 
 
 To add many at once, paste your `.env` content into the name field. Every `KEY=value` line becomes its own row. The **Raw Editor** shows all variables as text, which is the quickest way to edit a lot of them or copy them somewhere else.
 
+The Raw Editor wraps a value that spans several lines in quotes, and pasted content can do the same. `"`, `'` and `` ` `` all work, and the closing quote has to end its line:
+
+```bash
+REGISTRATION='{
+  "id": "example"
+}'
+```
+
 Changes are staged. Press **Deploy** on the changes bar to roll them out. See [Staged changes](/services/deployments#staged-changes).
 
 ## References
