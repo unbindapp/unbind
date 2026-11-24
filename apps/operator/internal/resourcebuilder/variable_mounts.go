@@ -1,49 +1,32 @@
 package resourcebuilder
 
 import (
-	"errors"
-
 	corev1 "k8s.io/api/core/v1"
 )
 
-var ErrRenderedMountsNotNeeded = errors.New("no mounted variable has a rendered value")
+func (rb *ResourceBuilder) BuildRenderedMountsSecret() *corev1.Secret {
+	meta := rb.buildObjectMeta()
+	meta.Name = rb.renderedMountsSecretName()
+	return &corev1.Secret{ObjectMeta: meta, Type: corev1.SecretTypeOpaque, Data: rb.renderedMountValues()}
+}
 
-func (rb *ResourceBuilder) RenderedMountsSecretName() string {
+func (rb *ResourceBuilder) renderedMountsSecretName() string {
 	return rb.service.Name + "-mounts"
 }
 
-// BuildRenderedMountsSecret holds the rendered values of mounted variables, since the
-// service secret keeps their references as written
-func (rb *ResourceBuilder) BuildRenderedMountsSecret() (*corev1.Secret, error) {
-	rendered := rb.renderedMountValues()
-	if len(rendered) == 0 {
-		return nil, ErrRenderedMountsNotNeeded
-	}
-
-	meta := rb.buildObjectMeta()
-	meta.Name = rb.RenderedMountsSecretName()
-	return &corev1.Secret{
-		ObjectMeta: meta,
-		Type:       corev1.SecretTypeOpaque,
-		Data:       rendered,
-	}, nil
-}
-
 func (rb *ResourceBuilder) renderedMountValues() map[string][]byte {
-	mounted := make(map[string]struct{}, len(rb.service.Spec.Config.VariableMounts))
-	for _, vm := range rb.service.Spec.Config.VariableMounts {
-		mounted[vm.Name] = struct{}{}
+	rendered := make(map[string]string, len(rb.service.Spec.EnvVars))
+	for _, env := range rb.service.Spec.EnvVars {
+		rendered[env.Name] = env.Value
 	}
 
 	values := make(map[string][]byte)
-	for _, env := range rb.service.Spec.EnvVars {
-		if env.ValueFrom != nil {
+	for _, vm := range rb.service.Spec.Config.VariableMounts {
+		value, ok := rendered[vm.Name]
+		if !ok {
 			continue
 		}
-		if _, ok := mounted[env.Name]; !ok {
-			continue
-		}
-		values[env.Name] = []byte(env.Value)
+		values[vm.Name] = []byte(value)
 	}
 	return values
 }

@@ -61,14 +61,10 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 	return r.deletePrepullJob(ctx, &service)
 }
 
-// reconcileRenderedMounts runs before the workload so new pods find the values they mount
 func (r *ServiceReconciler) reconcileRenderedMounts(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
-	desired, err := rb.BuildRenderedMountsSecret()
-	if err == resourcebuilder.ErrRenderedMountsNotNeeded {
-		return r.deleteIfExists(ctx, &corev1.Secret{}, rb.RenderedMountsSecretName(), service.Namespace)
-	}
-	if err != nil {
-		return fmt.Errorf("building rendered mounts secret: %w", err)
+	desired := rb.BuildRenderedMountsSecret()
+	if len(desired.Data) == 0 {
+		return r.deleteIfExists(ctx, &corev1.Secret{}, desired.Name, desired.Namespace)
 	}
 
 	return reconcileResource(ctx, r, desired, &service, maxReconcileRetries,
