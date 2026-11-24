@@ -129,6 +129,8 @@ func (k *KubeClient) RollingRestartPodsByLabel(
 		name := parts[2]
 
 		switch kind {
+		case "Job":
+			continue
 		case "Deployment":
 			if err := k.restartDeployment(ctx, namespace, name, client); err != nil {
 				return fmt.Errorf("failed to restart Deployment %s: %w", name, err)

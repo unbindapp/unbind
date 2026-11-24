@@ -575,3 +575,34 @@ func TestRestartPatchDiffersWithinTheSameSecond(t *testing.T) {
 		restartPatch(now.Add(time.Millisecond)),
 	)
 }
+
+func TestRollingRestartPodsByLabelSkipsJobPods(t *testing.T) {
+	ctx := context.Background()
+	labels := map[string]string{"unbind-service": "svc"}
+	deployment := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: "web", Namespace: "team"}}
+	replicaSet := &appsv1.ReplicaSet{ObjectMeta: metav1.ObjectMeta{
+		Name: "web-rs", Namespace: "team",
+		OwnerReferences: []metav1.OwnerReference{{Kind: "Deployment", Name: "web"}},
+	}}
+	deploymentPod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{
+		Name: "web-rs-abcde", Namespace: "team", Labels: labels,
+		OwnerReferences: []metav1.OwnerReference{{Kind: "ReplicaSet", Name: "web-rs"}},
+	}}
+	cronRunPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "report-1-abcde", Namespace: "team", Labels: labels,
+			OwnerReferences: []metav1.OwnerReference{{Kind: "Job", Name: "report-1"}},
+		},
+		Status: corev1.PodStatus{Phase: corev1.PodSucceeded},
+	}
+	client := fake.NewClientset(deployment, replicaSet, deploymentPod, cronRunPod)
+
+	require.NoError(t, (&KubeClient{}).RollingRestartPodsByLabel(ctx, "team", "unbind-service", "svc", client))
+
+	restarted, err := client.AppsV1().Deployments("team").Get(ctx, "web", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.NotEmpty(t, restarted.Spec.Template.Annotations["kubectl.kubernetes.io/restartedAt"])
+
+	_, err = client.CoreV1().Pods("team").Get(ctx, "report-1-abcde", metav1.GetOptions{})
+	assert.NoError(t, err, "a cron run pod is left to finish")
+}
