@@ -153,14 +153,19 @@ func (rb *ResourceBuilder) buildVolumes() ([]corev1.Volume, []corev1.VolumeMount
 		})
 	}
 
+	rendered := rb.renderedMountValues()
 	for i, vm := range rb.service.Spec.Config.VariableMounts {
+		secretName := rb.service.Spec.KubernetesSecret
+		if _, ok := rendered[vm.Name]; ok {
+			secretName = rb.RenderedMountsSecretName()
+		}
 		volumeName := fmt.Sprintf("var-mount-%d", i)
 		mounts = append(mounts, corev1.VolumeMount{Name: volumeName, MountPath: vm.Path, SubPath: vm.Name})
 		volumes = append(volumes, corev1.Volume{
 			Name: volumeName,
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
-					SecretName: rb.service.Spec.KubernetesSecret,
+					SecretName: secretName,
 					Items:      []corev1.KeyToPath{{Key: vm.Name, Path: vm.Name}},
 				},
 			},

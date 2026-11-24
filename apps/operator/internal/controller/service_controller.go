@@ -178,6 +178,11 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 		return nil
 	}
 
+	if err := r.reconcileRenderedMounts(ctx, rb, *service); err != nil {
+		logger.Error(err, "Failed to reconcile rendered variable mounts")
+		return err
+	}
+
 	if service.Spec.Config.CronSchedule != "" {
 		if err := r.reconcileCronJob(ctx, rb, *service); err != nil {
 			logger.Error(err, "Failed to reconcile CronJob")

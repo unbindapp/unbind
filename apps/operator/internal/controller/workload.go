@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"context"
 	stderrors "errors"
 	"fmt"
@@ -58,6 +59,29 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 		return err
 	}
 	return r.deletePrepullJob(ctx, &service)
+}
+
+// reconcileRenderedMounts runs before the workload so new pods find the values they mount
+func (r *ServiceReconciler) reconcileRenderedMounts(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
+	desired, err := rb.BuildRenderedMountsSecret()
+	if err == resourcebuilder.ErrRenderedMountsNotNeeded {
+		return r.deleteIfExists(ctx, &corev1.Secret{}, rb.RenderedMountsSecretName(), service.Namespace)
+	}
+	if err != nil {
+		return fmt.Errorf("building rendered mounts secret: %w", err)
+	}
+
+	return reconcileResource(ctx, r, desired, &service, maxReconcileRetries,
+		func(existing, desired *corev1.Secret) bool {
+			return !maps.EqualFunc(desired.Data, existing.Data, bytes.Equal) ||
+				!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
+		},
+		func(existing, desired *corev1.Secret) {
+			existing.Labels = desired.Labels
+			existing.Data = desired.Data
+		},
+		nil,
+	)
 }
 
 // reconcileCronJob renders a scheduled service as a CronJob and retires the Deployment
